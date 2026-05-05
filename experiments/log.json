@@ -1,2 +1,88 @@
-[]
+﻿[
+{
+    "created_at":  "2026-05-05T23:36:35",
+    "data_dir":  "C:\\open\\dacon-mosquito-trajectory-prediction\\data\\raw\\open (3)",
+    "delta_ms":  80.0,
+    "val_frac":  0.2,
+    "seed":  42,
+    "validation_size":  2000,
+    "best_method":  "velocity_last",
+    "submission_method":  "velocity_last",
+    "submission_path":  "C:\\open\\dacon-mosquito-trajectory-prediction\\submissions\\physics_baseline_velocity_last.csv",
+    "leaderboard":  [
+                        {
+                            "method":  "velocity_last",
+                            "mean_distance":  0.012726466852023161,
+                            "median_distance":  0.007929154687924248,
+                            "p90_distance":  0.028402764332275347,
+                            "p95_distance":  0.0484514003968557,
+                            "r_hit_1cm":  0.6085
+                        },
+                        {
+                            "method":  "acceleration_last",
+                            "mean_distance":  0.01623655330454666,
+                            "median_distance":  0.009805998192378047,
+                            "p90_distance":  0.03730636322527731,
+                            "p95_distance":  0.05663667845452231,
+                            "r_hit_1cm":  0.5115
+                        },
+                        {
+                            "method":  "poly2_recent5",
+                            "mean_distance":  0.019611177695866865,
+                            "median_distance":  0.011432875245430813,
+                            "p90_distance":  0.04956379877838285,
+                            "p95_distance":  0.07214673400256166,
+                            "r_hit_1cm":  0.45
+                        },
+                        {
+                            "method":  "velocity_fit_recent5",
+                            "mean_distance":  0.02177740004296447,
+                            "median_distance":  0.013361866565967002,
+                            "p90_distance":  0.05300559394825481,
+                            "p95_distance":  0.07571569310643081,
+                            "r_hit_1cm":  0.381
+                        },
+                        {
+                            "method":  "poly2_weighted",
+                            "mean_distance":  0.027528460748342566,
+                            "median_distance":  0.017307292090963163,
+                            "p90_distance":  0.06348877911341447,
+                            "p95_distance":  0.08884885744653831,
+                            "r_hit_1cm":  0.2715
+                        },
+                        {
+                            "method":  "poly2_all",
+                            "mean_distance":  0.03221562407934428,
+                            "median_distance":  0.02109599037164197,
+                            "p90_distance":  0.0749166260035572,
+                            "p95_distance":  0.10229291511720598,
+                            "r_hit_1cm":  0.219
+                        },
+                        {
+                            "method":  "velocity_fit_weighted",
+                            "mean_distance":  0.03465804938067362,
+                            "median_distance":  0.026081128178903918,
+                            "p90_distance":  0.07594840270706178,
+                            "p95_distance":  0.09600836913410067,
+                            "r_hit_1cm":  0.1725
+                        },
+                        {
+                            "method":  "velocity_fit_all",
+                            "mean_distance":  0.04198412092149295,
+                            "median_distance":  0.03164555510468477,
+                            "p90_distance":  0.09101374123321695,
+                            "p95_distance":  0.11620690821530906,
+                            "r_hit_1cm":  0.1325
+                        },
+                        {
+                            "method":  "position",
+                            "mean_distance":  0.050991200503534444,
+                            "median_distance":  0.04609712689907296,
+                            "p90_distance":  0.10427283005758353,
+                            "p95_distance":  0.10745724677061906,
+                            "r_hit_1cm":  0.004
+                        }
+                    ]
+}
+]
 

@@ -91,7 +91,40 @@ dacon-mosquito-trajectory-prediction/
 python scripts/validate_submission.py submissions/example.csv
 ```
 
+## First Baselines
+
+After placing the official competition data under `data/raw`, run:
+
+```bash
+python scripts/run_physics_baselines.py
+```
+
+This evaluates constant position, constant velocity, constant acceleration, and polynomial extrapolation baselines on a train holdout, then writes the best validation method as a submission file under `submissions/`.
+
+To run the end-to-end local loop, including baseline search, threshold-aware parameter search, submission validation, and Markdown result reports:
+
+```bash
+python scripts/auto_pipeline.py
+```
+
+For a smoke test on a small slice:
+
+```bash
+python scripts/run_physics_baselines.py --limit-train 100 --limit-test 100 --skip-submission
+```
+
+To commit and push code/reports after a successful run:
+
+```bash
+python scripts/auto_pipeline.py --publish-github
+```
+
+To search threshold-aware physics parameters after the first baseline:
+
+```bash
+python scripts/search_physics_params.py
+```
+
 ## Notes
 
 The raw data and submission files are excluded from GitHub. The repository is intended to track reproducible code, experiment logs, and competition strategy.
-
