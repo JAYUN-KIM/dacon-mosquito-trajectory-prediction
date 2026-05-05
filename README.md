@@ -1,38 +1,62 @@
-# DACON Mosquito Trajectory Prediction
+﻿# DACON 모기 비행 궤적 예측
 
-LiDAR sensor-local 3D coordinates from the past 400ms are used to predict a mosquito's position 80ms after the last observation.
+DACON `모기 비행 궤적 예측 AI 경진대회` 실험 레포지토리입니다.
 
-## Competition
+과거 400ms 동안의 3D 좌표 11개를 이용해 마지막 관측 시점 기준 `+80ms` 미래 좌표 `(x, y, z)`를 예측합니다.
 
-- Name: 모기 비행 궤적 예측 AI 경진대회
-- Platform: DACON
-- URL: https://dacon.io/competitions/official/236716/overview/description
-- Task: 3D future coordinate regression
-- Metric: R-Hit@1cm
-- Daily submissions: 5
-- Period: 2026-05-04 to 2026-06-01
+- 대회: [모기 비행 궤적 예측 AI 경진대회](https://dacon.io/competitions/official/236716/overview/description)
+- 평가: `R-Hit@1cm`
+- hit 기준: 예측 좌표와 정답 좌표의 3D Euclidean distance가 `0.01m` 이하
+- 현재 최고 public score: `0.65940`
 
-## Problem Summary
+## 현재 핵심 결론
 
-Each sample contains 11 observations at 40ms intervals:
+현재 가장 강한 방향은 `물리 기반 baseline + local-frame residual 모델링`입니다.
+
+초기에는 constant velocity, acceleration, polynomial extrapolation을 비교했고, 이후 LightGBM residual을 얹어 public score를 크게 올렸습니다. 2026-05-06 기준으로 가장 중요한 개선은 마지막 속도 방향을 기준으로 local coordinate frame을 만든 뒤 residual을 `진행방향 / 횡방향 / 상하방향`으로 예측한 것입니다.
+
+현재 해석은 다음과 같습니다.
+
+- 진행방향 위치는 물리 baseline이 이미 꽤 잘 잡는다.
+- 모델 보정은 진행방향보다 횡방향/상하방향 residual에서 더 효과적이다.
+- global `x, y, z` residual보다 local-frame residual target이 훨씬 안정적이다.
+- 당분간 딥러닝 전환보다 local-frame feature, target, axis calibration을 더 파는 것이 효율적이다.
+
+## Public Score 기록
+
+| 제출 파일 | Public score | 요약 |
+| --- | ---: | --- |
+| `physics_param_search_best.csv` | 0.61539 | threshold-aware 물리 baseline |
+| `aggressive_lgbm_residual.csv` | 0.63420 | LightGBM residual이 public에서 유효함을 확인 |
+| `candidate_binary_hit_selector.csv` | 0.62600 | 후보 선택기는 현재 feature로는 부족 |
+| `residual_zoo_rank1_lgbm_wide_a0275_s0.25.csv` | 0.63480 | LGBM wide residual 소폭 개선 |
+| `public_push_lgbm_wide_a0275_s0.40_5seed.csv` | 0.64120 | 5-seed residual ensemble |
+| `local_frame_lgbm_a0275_s0.55_5seed.csv` | 0.65900 | local-frame residual target으로 큰 점프 |
+| `local_axis_rank1_f0.48_s0.55_u0.62.csv` | 0.65940 | local-frame 축별 shrink로 추가 개선 |
+
+상세 정리는 [2026-05-06 실험 정리](docs/experiment_summary_2026-05-06.md)를 참고합니다.
+
+## 문제 구조
+
+각 샘플은 40ms 간격의 좌표 11개로 구성됩니다.
 
 ```text
 Input  : -400ms, -360ms, ..., -40ms, 0ms
-Target : +80ms position
+Target : +80ms 좌표
 ```
 
-Coordinates are sensor-local 3D positions:
+좌표계는 sensor-local 3D coordinate입니다.
 
 - `x`: forward
 - `y`: left
 - `z`: up
-- Unit: meter
+- 단위: meter
 
-The target is not just low average distance error. The final score is the hit rate: a prediction is counted as correct if the 3D Euclidean distance from the true future point is at most `0.01m`.
+평균 거리 오차만 낮추는 것이 목표가 아닙니다. 최종 평가는 `1cm` 이내 hit rate이므로, 평균 거리보다 `R-Hit@1cm`를 우선 기준으로 봅니다.
 
-## Data Structure
+## 데이터 배치
 
-Expected raw data layout after downloading `open.zip`:
+DACON에서 받은 `open.zip` 압축을 풀어 아래 형태로 둡니다.
 
 ```text
 data/raw/
@@ -46,133 +70,112 @@ data/raw/
 └── sample_submission.csv
 ```
 
-Each train/test CSV has:
+압축 해제 결과가 `data/raw/open (3)/...`처럼 한 단계 안쪽에 있어도 주요 스크립트가 자동 탐지합니다.
+
+각 train/test CSV 컬럼:
 
 ```text
 timestep_ms, x, y, z
 ```
 
-`train_labels.csv` and `sample_submission.csv` use:
+`train_labels.csv`, `sample_submission.csv` 컬럼:
 
 ```text
 id, x, y, z
 ```
 
-## Initial Modeling Direction
+## 주요 실행 명령
 
-This is a short-horizon physics/trajectory prediction problem. The first experiments should prioritize strong deterministic baselines before heavy neural models.
+제출 파일 형식 검증:
 
-Recommended first axis:
-
-1. Constant velocity extrapolation
-2. Constant acceleration extrapolation
-3. Polynomial / Savitzky-Golay style local smoothing
-4. Robust outlier handling for noisy LiDAR observations
-5. Model residuals over physics baselines using LightGBM/CatBoost
-6. Sequence model only after physics baselines are understood
-
-## Project Structure
-
-```text
-dacon-mosquito-trajectory-prediction/
-├── data/                  # Raw/processed data, ignored by git
-├── docs/                  # Handoff notes and research summaries
-├── experiments/           # Experiment logs
-├── notebooks/             # EDA notebooks
-├── scripts/               # Training, validation, submission scripts
-├── src/                   # Reusable modules
-├── submissions/           # Submission files, ignored by git
-└── README.md
-```
-
-## Validation
-
-```bash
+```powershell
 python scripts/validate_submission.py submissions/example.csv
 ```
 
-## First Baselines
+기본 물리 baseline 실행:
 
-After placing the official competition data under `data/raw`, run:
-
-```bash
+```powershell
 python scripts/run_physics_baselines.py
 ```
 
-This evaluates constant position, constant velocity, constant acceleration, and polynomial extrapolation baselines on a train holdout, then writes the best validation method as a submission file under `submissions/`.
+전체 자동 파이프라인:
 
-To run the end-to-end local loop, including baseline search, threshold-aware parameter search, submission validation, and Markdown result reports:
-
-```bash
+```powershell
 python scripts/auto_pipeline.py
 ```
 
-For a smoke test on a small slice:
+threshold-aware 물리 파라미터 탐색:
 
-```bash
-python scripts/run_physics_baselines.py --limit-train 100 --limit-test 100 --skip-submission
-```
-
-To commit and push code/reports after a successful run:
-
-```bash
-python scripts/auto_pipeline.py --publish-github
-```
-
-To search threshold-aware physics parameters after the first baseline:
-
-```bash
+```powershell
 python scripts/search_physics_params.py
 ```
 
-To run the more aggressive multi-seed physics CV and residual LightGBM experiments:
+LightGBM residual 공격 실험:
 
-```bash
+```powershell
 python scripts/run_aggressive_experiments.py
 ```
 
-To train a sample-wise selector that chooses among physics candidates:
+residual model zoo:
 
-```bash
-python scripts/run_candidate_selector.py
-```
-
-To compare more experimental residual model/shrink variants:
-
-```bash
+```powershell
 python scripts/run_residual_model_zoo.py
 ```
 
-To make 5-seed public-push variants around the current best residual family:
+5-seed public-push residual:
 
-```bash
+```powershell
 python scripts/run_public_push_residual.py
 ```
 
-To test richer physics/poly candidate features for residual modeling:
+feature-rich residual:
 
-```bash
+```powershell
 python scripts/run_feature_rich_residual.py
 ```
 
-To test residual prediction in the final-velocity local coordinate frame:
+local-frame residual:
 
-```bash
+```powershell
 python scripts/run_local_frame_residual.py
 ```
 
-To calibrate local-frame residual shrink separately by forward/side/up axes:
+local-frame 축별 shrink 탐색:
 
-```bash
+```powershell
 python scripts/run_local_frame_axis_shrink.py
 ```
 
-To blend two submission files:
+제출 파일 블렌딩:
 
-```bash
+```powershell
 python scripts/blend_submissions.py --left submissions/aggressive_lgbm_residual.csv --right submissions/residual_zoo_rank1_lgbm_wide_a0275_s0.25.csv --left-weight 0.7 --output submissions/blend_lgbm_residual_zoo_rank1_w70.csv
 ```
 
-## Notes
+## 레포 구조
 
-The raw data and submission files are excluded from GitHub. The repository is intended to track reproducible code, experiment logs, and competition strategy.
+```text
+dacon-mosquito-trajectory-prediction/
+├── data/                  # raw/processed 데이터, git 제외
+├── docs/                  # 인수인계 및 실험 요약
+├── experiments/           # public score와 실험 로그
+├── notebooks/             # EDA 노트북
+├── reports/               # 최신 실험 리포트
+├── scripts/               # 실행 스크립트
+├── src/                   # 재사용 모듈
+├── submissions/           # 제출 파일, git 제외
+└── README.md
+```
+
+## GitHub 업로드 정책
+
+GitHub에는 재현 가능한 코드, 리포트, 실험 기록만 올립니다.
+
+올리지 않는 것:
+
+- `data/raw/`
+- `data/processed/`
+- `submissions/`
+- 모델 artifact
+
+업로드 요청 시에는 코드 검증 후 한글 요약과 함께 commit/push합니다.
