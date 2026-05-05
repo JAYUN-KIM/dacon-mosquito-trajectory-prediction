@@ -1,0 +1,8 @@
+date,submission,public_score,notes
+2026-05-05,physics_param_search_best.csv,0.61539,first threshold-aware physics residual baseline
+2026-05-06,aggressive_lgbm_residual.csv,0.63420,LGBM residual confirmed strong on public
+2026-05-06,candidate_binary_hit_selector.csv,0.62600,selector underperformed residual despite oracle headroom
+2026-05-06,residual_zoo_rank1_lgbm_wide_a0275_s0.25.csv,0.63480,LGBM wide residual improved public slightly
+2026-05-06,public_push_lgbm_wide_a0275_s0.40_5seed.csv,0.64120,5-seed LGBM wide residual with stronger shrink
+2026-05-06,local_frame_lgbm_a0275_s0.55_5seed.csv,0.65900,local-frame residual target produced a major public jump
+2026-05-06,local_axis_rank1_f0.48_s0.55_u0.62.csv,0.65940,axis-wise local-frame shrink gave a small additional public gain

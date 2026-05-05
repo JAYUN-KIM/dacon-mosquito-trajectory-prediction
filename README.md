@@ -137,6 +137,42 @@ To train a sample-wise selector that chooses among physics candidates:
 python scripts/run_candidate_selector.py
 ```
 
+To compare more experimental residual model/shrink variants:
+
+```bash
+python scripts/run_residual_model_zoo.py
+```
+
+To make 5-seed public-push variants around the current best residual family:
+
+```bash
+python scripts/run_public_push_residual.py
+```
+
+To test richer physics/poly candidate features for residual modeling:
+
+```bash
+python scripts/run_feature_rich_residual.py
+```
+
+To test residual prediction in the final-velocity local coordinate frame:
+
+```bash
+python scripts/run_local_frame_residual.py
+```
+
+To calibrate local-frame residual shrink separately by forward/side/up axes:
+
+```bash
+python scripts/run_local_frame_axis_shrink.py
+```
+
+To blend two submission files:
+
+```bash
+python scripts/blend_submissions.py --left submissions/aggressive_lgbm_residual.csv --right submissions/residual_zoo_rank1_lgbm_wide_a0275_s0.25.csv --left-weight 0.7 --output submissions/blend_lgbm_residual_zoo_rank1_w70.csv
+```
+
 ## Notes
 
 The raw data and submission files are excluded from GitHub. The repository is intended to track reproducible code, experiment logs, and competition strategy.
