@@ -1,58 +1,115 @@
-﻿# DACON 모기 비행 궤적 예측
+# DACON 모기 비행 궤적 예측 AI 경진대회
 
-DACON `모기 비행 궤적 예측 AI 경진대회` 실험 레포지토리입니다.
+40ms 간격으로 관측된 과거 11개 3D 좌표를 활용해 모기의 `+80ms` 미래 위치를 예측하는 프로젝트입니다.
 
-과거 400ms 동안의 3D 좌표 11개를 이용해 마지막 관측 시점 기준 `+80ms` 미래 좌표 `(x, y, z)`를 예측합니다.
+짧은 시계열 궤적에서 물리 기반 extrapolation을 강한 기준점으로 잡고, local-frame residual 모델링을 통해 `R-Hit@1cm`를 높이는 것을 목표로 합니다.
 
-- 대회: [모기 비행 궤적 예측 AI 경진대회](https://dacon.io/competitions/official/236716/overview/description)
-- 평가: `R-Hit@1cm`
-- hit 기준: 예측 좌표와 정답 좌표의 3D Euclidean distance가 `0.01m` 이하
-- 현재 최고 public score: `0.65940`
+## 프로젝트 개요
 
-## 현재 핵심 결론
+- 대회: 모기 비행 궤적 예측 AI 경진대회
+- 플랫폼: DACON
+- 대회 링크: https://dacon.io/competitions/official/236716/overview/description
+- 평가 지표: R-Hit@1cm
+- 입력 데이터: 40ms 간격 11개 과거 3D 좌표 `-400ms ~ 0ms`
+- 목표: 마지막 관측 시점 기준 `+80ms` 미래 좌표 `(x, y, z)` 예측
+- 좌표 단위: meter
+- hit 기준: 예측 좌표와 실제 좌표의 3D Euclidean distance가 `0.01m` 이하
 
-현재 가장 강한 방향은 `물리 기반 baseline + local-frame residual 모델링`입니다.
+## 현재 성과
 
-초기에는 constant velocity, acceleration, polynomial extrapolation을 비교했고, 이후 LightGBM residual을 얹어 public score를 크게 올렸습니다. 2026-05-06 기준으로 가장 중요한 개선은 마지막 속도 방향을 기준으로 local coordinate frame을 만든 뒤 residual을 `진행방향 / 횡방향 / 상하방향`으로 예측한 것입니다.
+<!-- AUTO:PROJECT_STATUS:START -->
+- 최고 Public LB: **0.65940**
+- 최신 최고점 갱신일: **2026-05-06**
+- 핵심 개선 축: 마지막 속도 방향 기준 local-frame residual target과 축별 shrink calibration
+- 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
+<!-- AUTO:PROJECT_STATUS:END -->
 
-현재 해석은 다음과 같습니다.
+## 예측 타겟
 
-- 진행방향 위치는 물리 baseline이 이미 꽤 잘 잡는다.
-- 모델 보정은 진행방향보다 횡방향/상하방향 residual에서 더 효과적이다.
-- global `x, y, z` residual보다 local-frame residual target이 훨씬 안정적이다.
-- 당분간 딥러닝 전환보다 local-frame feature, target, axis calibration을 더 파는 것이 효율적이다.
+| 타겟 | 의미 |
+|---|---|
+| x | sensor-local forward 방향 미래 위치 |
+| y | sensor-local left 방향 미래 위치 |
+| z | sensor-local up 방향 미래 위치 |
 
-## Public Score 기록
+## 핵심 접근법
+
+1. 물리 기반 baseline
+   - constant position, constant velocity, constant acceleration, polynomial extrapolation을 먼저 비교했습니다.
+   - 초기부터 평균 거리보다 `R-Hit@1cm`를 우선 지표로 보고 후보를 선택했습니다.
+
+2. Threshold-aware physics parameter search
+   - 마지막 velocity와 acceleration 보정 계수를 직접 grid search했습니다.
+   - 단순 velocity extrapolation보다 약한 acceleration 보정이 public과 CV에서 더 좋은 신호를 보였습니다.
+
+3. LightGBM residual modeling
+   - 물리 baseline 예측값을 anchor로 두고, 정답과 baseline의 residual을 LightGBM으로 보정했습니다.
+   - residual 예측값은 그대로 더하지 않고 shrink를 적용해 과보정을 줄였습니다.
+
+4. Feature-rich residual
+   - 여러 물리 후보, polynomial extrapolation, weighted recent velocity, 후보 간 spread를 feature로 추가했습니다.
+   - 단순 raw 좌표 feature보다 후보 기반 feature가 residual 모델에 더 유용했습니다.
+
+5. Local-frame residual target
+   - 마지막 속도 방향을 forward 축으로 하는 local coordinate frame을 구성했습니다.
+   - residual을 global `x, y, z`가 아니라 `진행방향 / 횡방향 / 상하방향`으로 변환해 예측했습니다.
+   - 이 전환에서 public score가 `0.64120`에서 `0.65900`으로 크게 개선됐습니다.
+
+6. Axis-wise shrink calibration
+   - local-frame residual에 하나의 shrink만 쓰지 않고, forward/side/up 축별로 shrink를 다르게 적용했습니다.
+   - 진행방향 residual은 덜 믿고, 횡방향/상하방향 residual은 더 살리는 구성이 가장 좋았습니다.
+
+## 주요 인사이트
+
+- 이 문제는 딥러닝보다 강한 물리 baseline과 residual 보정이 먼저 먹혔습니다.
+- 평균 거리 최소화보다 `1cm` 안에 들어오는 hit rate를 직접 보는 것이 중요했습니다.
+- global 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
+- 진행방향 위치는 물리 baseline이 이미 잘 잡고 있어 모델 보정을 과하게 넣으면 흔들릴 수 있습니다.
+- 횡방향/상하방향 residual은 미세한 곡률과 흔들림을 모델이 보정할 여지가 더 컸습니다.
+- 후보 선택기 방식은 oracle headroom은 있었지만, 현재 feature로는 residual 모델보다 약했습니다.
+- 당분간은 새로운 모델 계열보다 local-frame target, local-axis feature, 축별 calibration을 더 파는 것이 효율적입니다.
+
+## Public Score 흐름
 
 | 제출 파일 | Public score | 요약 |
-| --- | ---: | --- |
+|---|---:|---|
 | `physics_param_search_best.csv` | 0.61539 | threshold-aware 물리 baseline |
-| `aggressive_lgbm_residual.csv` | 0.63420 | LightGBM residual이 public에서 유효함을 확인 |
+| `aggressive_lgbm_residual.csv` | 0.63420 | LGBM residual이 public에서 유효함을 확인 |
 | `candidate_binary_hit_selector.csv` | 0.62600 | 후보 선택기는 현재 feature로는 부족 |
 | `residual_zoo_rank1_lgbm_wide_a0275_s0.25.csv` | 0.63480 | LGBM wide residual 소폭 개선 |
 | `public_push_lgbm_wide_a0275_s0.40_5seed.csv` | 0.64120 | 5-seed residual ensemble |
 | `local_frame_lgbm_a0275_s0.55_5seed.csv` | 0.65900 | local-frame residual target으로 큰 점프 |
 | `local_axis_rank1_f0.48_s0.55_u0.62.csv` | 0.65940 | local-frame 축별 shrink로 추가 개선 |
 
-상세 정리는 [2026-05-06 실험 정리](docs/experiment_summary_2026-05-06.md)를 참고합니다.
+## 대표 실험 코드
 
-## 문제 구조
+| 파일 | 역할 |
+|---|---|
+| `scripts/run_physics_baselines.py` | 기본 물리 baseline 평가 및 제출 생성 |
+| `scripts/search_physics_params.py` | velocity/acceleration 계수 grid search |
+| `scripts/run_aggressive_experiments.py` | multi-seed physics CV 및 LGBM residual 실험 |
+| `scripts/run_residual_model_zoo.py` | LGBM/CatBoost residual model zoo 비교 |
+| `scripts/run_public_push_residual.py` | public에서 강한 residual family의 5-seed 확장 |
+| `scripts/run_feature_rich_residual.py` | 물리/다항식 후보 기반 feature-rich residual 실험 |
+| `scripts/run_local_frame_residual.py` | local-frame residual target 실험 |
+| `scripts/run_local_frame_axis_shrink.py` | forward/side/up 축별 shrink 탐색 |
+| `scripts/blend_submissions.py` | 제출 파일 좌표 블렌딩 |
+| `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 
-각 샘플은 40ms 간격의 좌표 11개로 구성됩니다.
+## 프로젝트 구조
 
 ```text
-Input  : -400ms, -360ms, ..., -40ms, 0ms
-Target : +80ms 좌표
+dacon-mosquito-trajectory-prediction/
+├── data/                  # 원본/가공 데이터, gitignore
+├── docs/                  # 인수인계 및 실험 요약
+├── experiments/           # public score와 실험 로그
+├── notebooks/             # EDA 및 모델링 노트북
+├── reports/               # 최신 실험 리포트
+├── scripts/               # 실험/후보 생성/검증 스크립트
+├── src/                   # 공통 모듈
+├── submissions/           # 제출 파일, gitignore
+└── README.md
 ```
-
-좌표계는 sensor-local 3D coordinate입니다.
-
-- `x`: forward
-- `y`: left
-- `z`: up
-- 단위: meter
-
-평균 거리 오차만 낮추는 것이 목표가 아닙니다. 최종 평가는 `1cm` 이내 hit rate이므로, 평균 거리보다 `R-Hit@1cm`를 우선 기준으로 봅니다.
 
 ## 데이터 배치
 
@@ -84,98 +141,36 @@ timestep_ms, x, y, z
 id, x, y, z
 ```
 
-## 주요 실행 명령
-
-제출 파일 형식 검증:
+## 재현 흐름
 
 ```powershell
-python scripts/validate_submission.py submissions/example.csv
-```
+cd C:\open\dacon-mosquito-trajectory-prediction
 
-기본 물리 baseline 실행:
-
-```powershell
+# 기본 물리 baseline
 python scripts/run_physics_baselines.py
-```
 
-전체 자동 파이프라인:
-
-```powershell
-python scripts/auto_pipeline.py
-```
-
-threshold-aware 물리 파라미터 탐색:
-
-```powershell
+# threshold-aware 물리 파라미터 탐색
 python scripts/search_physics_params.py
-```
 
-LightGBM residual 공격 실험:
-
-```powershell
-python scripts/run_aggressive_experiments.py
-```
-
-residual model zoo:
-
-```powershell
-python scripts/run_residual_model_zoo.py
-```
-
-5-seed public-push residual:
-
-```powershell
-python scripts/run_public_push_residual.py
-```
-
-feature-rich residual:
-
-```powershell
-python scripts/run_feature_rich_residual.py
-```
-
-local-frame residual:
-
-```powershell
+# local-frame residual 실험
 python scripts/run_local_frame_residual.py
-```
 
-local-frame 축별 shrink 탐색:
-
-```powershell
+# local-frame 축별 shrink 탐색
 python scripts/run_local_frame_axis_shrink.py
+
+# 제출 파일 검증
+python scripts/validate_submission.py submissions/local_axis_rank1_f0.48_s0.55_u0.62.csv
 ```
 
-제출 파일 블렌딩:
+## 상세 기록
 
-```powershell
-python scripts/blend_submissions.py --left submissions/aggressive_lgbm_residual.csv --right submissions/residual_zoo_rank1_lgbm_wide_a0275_s0.25.csv --left-weight 0.7 --output submissions/blend_lgbm_residual_zoo_rank1_w70.csv
-```
+- [2026-05-06 local-frame 실험 정리](docs/experiment_summary_2026-05-06.md)
+- [public score 기록](experiments/public_scores.csv)
+- [최신 local-frame axis shrink 리포트](reports/latest_local_frame_axis_shrink.md)
+- [실험 로그 JSON](experiments/log.json)
 
-## 레포 구조
+## 비고
 
-```text
-dacon-mosquito-trajectory-prediction/
-├── data/                  # raw/processed 데이터, git 제외
-├── docs/                  # 인수인계 및 실험 요약
-├── experiments/           # public score와 실험 로그
-├── notebooks/             # EDA 노트북
-├── reports/               # 최신 실험 리포트
-├── scripts/               # 실행 스크립트
-├── src/                   # 재사용 모듈
-├── submissions/           # 제출 파일, git 제외
-└── README.md
-```
+원본 데이터와 제출 파일은 용량 및 대회 규정 관리를 위해 GitHub에 포함하지 않습니다.
 
-## GitHub 업로드 정책
-
-GitHub에는 재현 가능한 코드, 리포트, 실험 기록만 올립니다.
-
-올리지 않는 것:
-
-- `data/raw/`
-- `data/processed/`
-- `submissions/`
-- 모델 artifact
-
-업로드 요청 시에는 코드 검증 후 한글 요약과 함께 commit/push합니다.
+이 저장소는 실험 코드, 핵심 결과, 재현 가능한 연구 기록을 중심으로 정리합니다.
