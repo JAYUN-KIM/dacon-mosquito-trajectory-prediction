@@ -125,6 +125,18 @@ To search threshold-aware physics parameters after the first baseline:
 python scripts/search_physics_params.py
 ```
 
+To run the more aggressive multi-seed physics CV and residual LightGBM experiments:
+
+```bash
+python scripts/run_aggressive_experiments.py
+```
+
+To train a sample-wise selector that chooses among physics candidates:
+
+```bash
+python scripts/run_candidate_selector.py
+```
+
 ## Notes
 
 The raw data and submission files are excluded from GitHub. The repository is intended to track reproducible code, experiment logs, and competition strategy.
