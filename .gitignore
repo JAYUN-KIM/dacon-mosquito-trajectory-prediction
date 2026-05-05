@@ -1,0 +1,29 @@
+# Data and submissions
+data/raw/
+data/processed/
+submissions/
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Model artifacts
+models/
+outputs/
+catboost_info/
+*.pkl
+*.joblib
+*.pt
+*.pth
+
+# Environment
+.env
+.venv/
+venv/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+
