@@ -12,6 +12,7 @@ __pycache__/
 models/
 outputs/
 catboost_info/
+reports/*.log
 *.pkl
 *.joblib
 *.pt
@@ -26,4 +27,3 @@ venv/
 .DS_Store
 Thumbs.db
 .vscode/
-
