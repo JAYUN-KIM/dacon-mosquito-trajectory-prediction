@@ -16,9 +16,9 @@
 ## 현재 성과
 
 <!-- AUTO:PROJECT_STATUS:START -->
-- 최고 Public LB: **0.67220**
-- 최신 최고점 갱신일: **2026-05-07**
-- 핵심 개선 축: hit-boundary weighted local-frame residual + normalized trajectory geometry features
+- 최고 Public LB: **0.67800**
+- 최신 최고점 갱신일: **2026-05-08**
+- 핵심 개선 축: scale-normalized pure direct-step local target + hit-boundary weighting
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -54,12 +54,18 @@
    - normalized trajectory geometry feature를 추가하고, base physics error가 1cm 근방인 샘플에 가중치를 줬습니다.
    - 이 축에서 `0.67100`, 이후 5-seed refine으로 `0.67220`까지 상승했습니다.
 
+6. Direct-step local target
+   - residual anchor 보정만으로는 정체가 보여, 마지막 관측 좌표 기준 `+80ms displacement`를 local frame에서 직접 예측했습니다.
+   - sample별 motion scale로 target을 정규화한 뒤 추론 시 다시 복원하는 방식을 적용했습니다.
+   - 순수 direct-step LGBM boundary 후보가 Public LB `0.67800`으로 새 최고점을 만들었습니다.
+
 ## 주요 인사이트
 
 - 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
 - forward/side/up 축별 shrink를 다르게 주는 것이 단일 shrink보다 유리했습니다.
 - retrieval은 단독 모델로는 약하지만, 일부 high-confidence 샘플 보정 재료로는 효과가 있었습니다.
 - 가장 큰 돌파는 feature 수를 무작정 늘린 것이 아니라, `1cm hit 경계`를 직접 겨냥한 sample weighting에서 나왔습니다.
+- 2026-05-08 기준으로는 residual 보정 축보다 pure direct-step target 전환이 더 큰 public 개선을 만들었습니다.
 - Public과 CV가 완전히 일치하지 않으므로, 새 축은 빠르게 public probe하고 강한 신호가 나온 축만 확장하는 전략이 효과적입니다.
 
 ## Public Score 흐름
@@ -75,6 +81,9 @@
 | `retr_blend_rank1_confidentrouteblend...csv` | 0.66040 | selective retrieval route blend |
 | `hit_weighted_rank1_l2_base_boundary_f0.46_s0.58_u0.70.csv` | 0.67100 | hit-boundary weighted local-frame breakthrough |
 | `hit_breakthrough_rank1_basea5s0045_f0.52_s0.58_u0.70_5seed.csv` | 0.67220 | 5-seed hit-weighted breakthrough refine |
+| `regime_hit_rank1_globalhitweighted_a0.00_f0.56_s0.58_u0.70.csv` | 0.67300 | regime router 축은 큰 돌파 없이 안전 변형 |
+| `direct_step_rank2_cadeltascaledlgbmboundary_f0.52_s0.58_u0.78.csv` | 0.67340 | scale-normalized CA residual LGBM |
+| `direct_step_pure_lgbmboundary_f1.02_s1.00_u1.00.csv` | **0.67800** | pure direct-step local target 새 최고점 |
 
 ## 대표 실험 코드
 
@@ -90,6 +99,8 @@
 | `scripts/run_retrieval_route_refine.py` | retrieval route blend 세부 탐색 |
 | `scripts/run_hit_weighted_local_frame.py` | hit-boundary weighted local-frame breakthrough |
 | `scripts/run_hit_weighted_breakthrough_refine.py` | 0.671 breakthrough 5-seed 안정화 |
+| `scripts/run_regime_hit_weighted_router.py` | motion regime별 hit-weighted router 실험 |
+| `scripts/run_direct_step_geometry.py` | direct-step target, scale-normalized residual, CatBoost/LGBM 비교 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -134,20 +145,25 @@ cd C:\open\dacon-mosquito-trajectory-prediction
 # 최신 breakthrough 계열 후보 생성
 python scripts/run_hit_weighted_breakthrough_refine.py
 
+# direct-step geometry 계열 후보 생성
+python scripts/run_direct_step_geometry.py
+
 # 제출 파일 검증 예시
-python scripts/validate_submission.py submissions/hit_breakthrough_rank1_basea5s0045_f0.52_s0.58_u0.70_5seed.csv
+python scripts/validate_submission.py submissions/direct_step_pure_lgbmboundary_f1.02_s1.00_u1.00.csv
 
 # GitHub 업로드
-python scripts/publish_to_github.py --message "Document 2026-05-07 hit-weighted breakthrough"
+python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step breakthrough"
 ```
 
 ## 상세 기록
 
 - [2026-05-06 local-frame 실험 정리](docs/experiment_summary_2026-05-06.md)
 - [2026-05-07 hit-weighted breakthrough 정리](docs/experiment_summary_2026-05-07.md)
+- [2026-05-08 direct-step target 전환 실험 정리](docs/experiment_summary_2026-05-08.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
+- [direct-step geometry 리포트](reports/latest_direct_step_geometry.md)
 
 ## 비고
 

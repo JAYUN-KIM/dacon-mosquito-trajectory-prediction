@@ -11,3 +11,8 @@ date,submission,public_score,notes
 2026-05-07,retr_route_refine_rank1_axisfine048052070_retrk32softmax075_combomeanagreement_w0.36_r0.25.csv,0.66000,aggressive route refine did not beat the safer 0.6604 anchor; stop micro-tuning and restart broader research
 2026-05-07,hit_weighted_rank1_l2_base_boundary_f0.46_s0.58_u0.70.csv,0.67100,hit-boundary weighted local-frame model with normalized geometry features produced a major breakthrough
 2026-05-07,hit_breakthrough_rank1_basea5s0045_f0.52_s0.58_u0.70_5seed.csv,0.67220,5-seed hit-weighted breakthrough refine became the current public best
+2026-05-08,regime_hit_rank1_globalhitweighted_a0.00_f0.56_s0.58_u0.70.csv,0.67300,regime-router branch did not create a new route signal but produced a safe global shrink variant
+2026-05-08,regime_hit_rank2_globalhitweighted_a0.00_f0.52_s0.58_u0.78.csv,0.67260,second regime-router global shrink variant stayed near the anchor
+2026-05-08,direct_step_rank1_cadeltascaledcatboundary_f0.52_s0.58_u0.78.csv,0.67100,CatBoost scale-normalized CA residual had strong CV but underperformed on public
+2026-05-08,direct_step_rank2_cadeltascaledlgbmboundary_f0.52_s0.58_u0.78.csv,0.67340,LGBM scale-normalized CA residual improved slightly over the previous anchor
+2026-05-08,direct_step_pure_lgbmboundary_f1.02_s1.00_u1.00.csv,0.67800,pure direct-step local target produced a new public best and opened the next research branch
