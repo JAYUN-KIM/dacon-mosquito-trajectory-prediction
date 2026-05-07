@@ -1,26 +1,24 @@
 # DACON 모기 비행 궤적 예측 AI 경진대회
 
-40ms 간격으로 관측된 과거 11개 3D 좌표를 활용해 모기의 `+80ms` 미래 위치를 예측하는 프로젝트입니다.
-
-짧은 시계열 궤적에서 물리 기반 extrapolation을 강한 기준점으로 잡고, local-frame residual 모델링을 통해 `R-Hit@1cm`를 높이는 것을 목표로 합니다.
+40ms 간격으로 관측된 과거 11개 3D 좌표를 활용해 모기의 `+80ms` 미래 위치 `(x, y, z)`를 예측하는 프로젝트입니다.  
+단순 평균 거리보다 대회 지표인 `R-Hit@1cm`를 직접 끌어올리는 것을 목표로, 물리 기반 baseline에서 출발해 local-frame residual, selective retrieval routing, hit-boundary weighted modeling까지 확장했습니다.
 
 ## 프로젝트 개요
 
 - 대회: 모기 비행 궤적 예측 AI 경진대회
 - 플랫폼: DACON
-- 대회 링크: https://dacon.io/competitions/official/236716/overview/description
 - 평가 지표: R-Hit@1cm
-- 입력 데이터: 40ms 간격 11개 과거 3D 좌표 `-400ms ~ 0ms`
+- 입력 데이터: 40ms 간격 과거 11개 3D 좌표 `-400ms ~ 0ms`
 - 목표: 마지막 관측 시점 기준 `+80ms` 미래 좌표 `(x, y, z)` 예측
-- 좌표 단위: meter
 - hit 기준: 예측 좌표와 실제 좌표의 3D Euclidean distance가 `0.01m` 이하
+- 좌표 단위: meter
 
 ## 현재 성과
 
 <!-- AUTO:PROJECT_STATUS:START -->
-- 최고 Public LB: **0.65940**
-- 최신 최고점 갱신일: **2026-05-06**
-- 핵심 개선 축: 마지막 속도 방향 기준 local-frame residual target과 축별 shrink calibration
+- 최고 Public LB: **0.67220**
+- 최신 최고점 갱신일: **2026-05-07**
+- 핵심 개선 축: hit-boundary weighted local-frame residual + normalized trajectory geometry features
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -35,51 +33,48 @@
 ## 핵심 접근법
 
 1. 물리 기반 baseline
-   - constant position, constant velocity, constant acceleration, polynomial extrapolation을 먼저 비교했습니다.
-   - 초기부터 평균 거리보다 `R-Hit@1cm`를 우선 지표로 보고 후보를 선택했습니다.
+   - constant velocity, constant acceleration, polynomial extrapolation을 먼저 비교했습니다.
+   - `R-Hit@1cm` 기준으로 velocity/acceleration 계수를 직접 탐색했습니다.
 
-2. Threshold-aware physics parameter search
-   - 마지막 velocity와 acceleration 보정 계수를 직접 grid search했습니다.
-   - 단순 velocity extrapolation보다 약한 acceleration 보정이 public과 CV에서 더 좋은 신호를 보였습니다.
+2. Residual ML
+   - 물리 예측값을 anchor로 두고 LightGBM이 residual을 보정하도록 구성했습니다.
+   - residual 예측을 그대로 더하지 않고 shrink를 적용해 과보정을 줄였습니다.
 
-3. LightGBM residual modeling
-   - 물리 baseline 예측값을 anchor로 두고, 정답과 baseline의 residual을 LightGBM으로 보정했습니다.
-   - residual 예측값은 그대로 더하지 않고 shrink를 적용해 과보정을 줄였습니다.
+3. Local-frame residual
+   - 마지막 속도 방향을 forward 축으로 하는 local coordinate frame을 만들었습니다.
+   - global `x, y, z` residual 대신 `진행 방향 / 좌우 방향 / 상하 방향` residual을 예측했습니다.
+   - 이 전환으로 Public LB가 `0.64120`에서 `0.65900`까지 크게 올랐습니다.
 
-4. Feature-rich residual
-   - 여러 물리 후보, polynomial extrapolation, weighted recent velocity, 후보 간 spread를 feature로 추가했습니다.
-   - 단순 raw 좌표 feature보다 후보 기반 feature가 residual 모델에 더 유용했습니다.
+4. Selective retrieval routing
+   - train에서 유사한 과거 궤적을 검색해 residual을 가져오는 kNN/retrieval 계열을 실험했습니다.
+   - retrieval 단독은 약했지만, confidence가 높은 일부 샘플에만 섞는 route blend가 `0.66040`까지 개선했습니다.
 
-5. Local-frame residual target
-   - 마지막 속도 방향을 forward 축으로 하는 local coordinate frame을 구성했습니다.
-   - residual을 global `x, y, z`가 아니라 `진행방향 / 횡방향 / 상하방향`으로 변환해 예측했습니다.
-   - 이 전환에서 public score가 `0.64120`에서 `0.65900`으로 크게 개선됐습니다.
-
-6. Axis-wise shrink calibration
-   - local-frame residual에 하나의 shrink만 쓰지 않고, forward/side/up 축별로 shrink를 다르게 적용했습니다.
-   - 진행방향 residual은 덜 믿고, 횡방향/상하방향 residual은 더 살리는 구성이 가장 좋았습니다.
+5. Hit-boundary weighted local-frame
+   - 평균 거리 최적화가 아니라 `1cm hit 경계` 근처 샘플을 더 중요하게 학습했습니다.
+   - normalized trajectory geometry feature를 추가하고, base physics error가 1cm 근방인 샘플에 가중치를 줬습니다.
+   - 이 축에서 `0.67100`, 이후 5-seed refine으로 `0.67220`까지 상승했습니다.
 
 ## 주요 인사이트
 
-- 이 문제는 딥러닝보다 강한 물리 baseline과 residual 보정이 먼저 먹혔습니다.
-- 평균 거리 최소화보다 `1cm` 안에 들어오는 hit rate를 직접 보는 것이 중요했습니다.
-- global 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
-- 진행방향 위치는 물리 baseline이 이미 잘 잡고 있어 모델 보정을 과하게 넣으면 흔들릴 수 있습니다.
-- 횡방향/상하방향 residual은 미세한 곡률과 흔들림을 모델이 보정할 여지가 더 컸습니다.
-- 후보 선택기 방식은 oracle headroom은 있었지만, 현재 feature로는 residual 모델보다 약했습니다.
-- 당분간은 새로운 모델 계열보다 local-frame target, local-axis feature, 축별 calibration을 더 파는 것이 효율적입니다.
+- 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
+- forward/side/up 축별 shrink를 다르게 주는 것이 단일 shrink보다 유리했습니다.
+- retrieval은 단독 모델로는 약하지만, 일부 high-confidence 샘플 보정 재료로는 효과가 있었습니다.
+- 가장 큰 돌파는 feature 수를 무작정 늘린 것이 아니라, `1cm hit 경계`를 직접 겨냥한 sample weighting에서 나왔습니다.
+- Public과 CV가 완전히 일치하지 않으므로, 새 축은 빠르게 public probe하고 강한 신호가 나온 축만 확장하는 전략이 효과적입니다.
 
 ## Public Score 흐름
 
 | 제출 파일 | Public score | 요약 |
 |---|---:|---|
 | `physics_param_search_best.csv` | 0.61539 | threshold-aware 물리 baseline |
-| `aggressive_lgbm_residual.csv` | 0.63420 | LGBM residual이 public에서 유효함을 확인 |
-| `candidate_binary_hit_selector.csv` | 0.62600 | 후보 선택기는 현재 feature로는 부족 |
-| `residual_zoo_rank1_lgbm_wide_a0275_s0.25.csv` | 0.63480 | LGBM wide residual 소폭 개선 |
+| `aggressive_lgbm_residual.csv` | 0.63420 | LGBM residual 유효성 확인 |
+| `candidate_binary_hit_selector.csv` | 0.62600 | 후보 선택기는 residual보다 약함 |
 | `public_push_lgbm_wide_a0275_s0.40_5seed.csv` | 0.64120 | 5-seed residual ensemble |
-| `local_frame_lgbm_a0275_s0.55_5seed.csv` | 0.65900 | local-frame residual target으로 큰 점프 |
-| `local_axis_rank1_f0.48_s0.55_u0.62.csv` | 0.65940 | local-frame 축별 shrink로 추가 개선 |
+| `local_frame_lgbm_a0275_s0.55_5seed.csv` | 0.65900 | local-frame residual target |
+| `local_axis_rank1_f0.48_s0.55_u0.62.csv` | 0.65940 | 축별 shrink calibration |
+| `retr_blend_rank1_confidentrouteblend...csv` | 0.66040 | selective retrieval route blend |
+| `hit_weighted_rank1_l2_base_boundary_f0.46_s0.58_u0.70.csv` | 0.67100 | hit-boundary weighted local-frame breakthrough |
+| `hit_breakthrough_rank1_basea5s0045_f0.52_s0.58_u0.70_5seed.csv` | 0.67220 | 5-seed hit-weighted breakthrough refine |
 
 ## 대표 실험 코드
 
@@ -87,21 +82,23 @@
 |---|---|
 | `scripts/run_physics_baselines.py` | 기본 물리 baseline 평가 및 제출 생성 |
 | `scripts/search_physics_params.py` | velocity/acceleration 계수 grid search |
-| `scripts/run_aggressive_experiments.py` | multi-seed physics CV 및 LGBM residual 실험 |
-| `scripts/run_residual_model_zoo.py` | LGBM/CatBoost residual model zoo 비교 |
-| `scripts/run_public_push_residual.py` | public에서 강한 residual family의 5-seed 확장 |
-| `scripts/run_feature_rich_residual.py` | 물리/다항식 후보 기반 feature-rich residual 실험 |
 | `scripts/run_local_frame_residual.py` | local-frame residual target 실험 |
 | `scripts/run_local_frame_axis_shrink.py` | forward/side/up 축별 shrink 탐색 |
-| `scripts/blend_submissions.py` | 제출 파일 좌표 블렌딩 |
+| `scripts/run_local_frame_fine_axis_search.py` | local-axis shrink 주변 정밀 탐색 |
+| `scripts/run_trajectory_retrieval.py` | 유사 궤적 retrieval/kNN 후보 생성 |
+| `scripts/run_retrieval_blend_router.py` | local-frame anchor와 retrieval 선택적 blend |
+| `scripts/run_retrieval_route_refine.py` | retrieval route blend 세부 탐색 |
+| `scripts/run_hit_weighted_local_frame.py` | hit-boundary weighted local-frame breakthrough |
+| `scripts/run_hit_weighted_breakthrough_refine.py` | 0.671 breakthrough 5-seed 안정화 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
+| `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
 ## 프로젝트 구조
 
 ```text
 dacon-mosquito-trajectory-prediction/
 ├── data/                  # 원본/가공 데이터, gitignore
-├── docs/                  # 인수인계 및 실험 요약
+├── docs/                  # 인수인계 및 일별 실험 요약
 ├── experiments/           # public score와 실험 로그
 ├── notebooks/             # EDA 및 모델링 노트북
 ├── reports/               # 최신 실험 리포트
@@ -113,7 +110,7 @@ dacon-mosquito-trajectory-prediction/
 
 ## 데이터 배치
 
-DACON에서 받은 `open.zip` 압축을 풀어 아래 형태로 둡니다.
+DACON에서 받은 `open.zip` 압축 해제 후 아래 형태를 기대합니다.
 
 ```text
 data/raw/
@@ -127,50 +124,32 @@ data/raw/
 └── sample_submission.csv
 ```
 
-압축 해제 결과가 `data/raw/open (3)/...`처럼 한 단계 안쪽에 있어도 주요 스크립트가 자동 탐지합니다.
-
-각 train/test CSV 컬럼:
-
-```text
-timestep_ms, x, y, z
-```
-
-`train_labels.csv`, `sample_submission.csv` 컬럼:
-
-```text
-id, x, y, z
-```
+압축 해제 결과가 `data/raw/open (3)/...`처럼 한 단계 더 들어가 있어도 주요 스크립트가 자동 탐지합니다.
 
 ## 재현 흐름
 
 ```powershell
 cd C:\open\dacon-mosquito-trajectory-prediction
 
-# 기본 물리 baseline
-python scripts/run_physics_baselines.py
+# 최신 breakthrough 계열 후보 생성
+python scripts/run_hit_weighted_breakthrough_refine.py
 
-# threshold-aware 물리 파라미터 탐색
-python scripts/search_physics_params.py
+# 제출 파일 검증 예시
+python scripts/validate_submission.py submissions/hit_breakthrough_rank1_basea5s0045_f0.52_s0.58_u0.70_5seed.csv
 
-# local-frame residual 실험
-python scripts/run_local_frame_residual.py
-
-# local-frame 축별 shrink 탐색
-python scripts/run_local_frame_axis_shrink.py
-
-# 제출 파일 검증
-python scripts/validate_submission.py submissions/local_axis_rank1_f0.48_s0.55_u0.62.csv
+# GitHub 업로드
+python scripts/publish_to_github.py --message "Document 2026-05-07 hit-weighted breakthrough"
 ```
 
 ## 상세 기록
 
 - [2026-05-06 local-frame 실험 정리](docs/experiment_summary_2026-05-06.md)
+- [2026-05-07 hit-weighted breakthrough 정리](docs/experiment_summary_2026-05-07.md)
 - [public score 기록](experiments/public_scores.csv)
-- [최신 local-frame axis shrink 리포트](reports/latest_local_frame_axis_shrink.md)
-- [실험 로그 JSON](experiments/log.json)
+- [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
+- [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
 
 ## 비고
 
-원본 데이터와 제출 파일은 용량 및 대회 규정 관리를 위해 GitHub에 포함하지 않습니다.
-
+원본 데이터와 제출 파일은 용량 및 대회 규정 관리를 위해 GitHub에 포함하지 않습니다.  
 이 저장소는 실험 코드, 핵심 결과, 재현 가능한 연구 기록을 중심으로 정리합니다.

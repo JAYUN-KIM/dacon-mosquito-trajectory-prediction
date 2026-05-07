@@ -6,3 +6,8 @@ date,submission,public_score,notes
 2026-05-06,public_push_lgbm_wide_a0275_s0.40_5seed.csv,0.64120,5-seed LGBM wide residual with stronger shrink
 2026-05-06,local_frame_lgbm_a0275_s0.55_5seed.csv,0.65900,local-frame residual target produced a major public jump
 2026-05-06,local_axis_rank1_f0.48_s0.55_u0.62.csv,0.65940,axis-wise local-frame shrink gave a small additional public gain
+2026-05-07,local_axis_fine_rank2_f0.46_s0.55_u0.66.csv,0.65880,fine axis shrink did not beat the 0.6594 anchor and triggered a reset toward retrieval-style experiments
+2026-05-07,retr_blend_rank1_confidentrouteblend_axisfine048052070_retrlocalmotionlocalresk50softmax075_w0.15_r0.20.csv,0.66040,selective retrieval route blend improved public and opened a new direction
+2026-05-07,retr_route_refine_rank1_axisfine048052070_retrk32softmax075_combomeanagreement_w0.36_r0.25.csv,0.66000,aggressive route refine did not beat the safer 0.6604 anchor; stop micro-tuning and restart broader research
+2026-05-07,hit_weighted_rank1_l2_base_boundary_f0.46_s0.58_u0.70.csv,0.67100,hit-boundary weighted local-frame model with normalized geometry features produced a major breakthrough
+2026-05-07,hit_breakthrough_rank1_basea5s0045_f0.52_s0.58_u0.70_5seed.csv,0.67220,5-seed hit-weighted breakthrough refine became the current public best
