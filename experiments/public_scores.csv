@@ -16,3 +16,8 @@ date,submission,public_score,notes
 2026-05-08,direct_step_rank1_cadeltascaledcatboundary_f0.52_s0.58_u0.78.csv,0.67100,CatBoost scale-normalized CA residual had strong CV but underperformed on public
 2026-05-08,direct_step_rank2_cadeltascaledlgbmboundary_f0.52_s0.58_u0.78.csv,0.67340,LGBM scale-normalized CA residual improved slightly over the previous anchor
 2026-05-08,direct_step_pure_lgbmboundary_f1.02_s1.00_u1.00.csv,0.67800,pure direct-step local target produced a new public best and opened the next research branch
+2026-05-09,direct_refine_oldweight_caa5_f1.02_s1.00_u1.00_5seed.csv,0.67860,old direct-step boundary weight with 5-seed ensemble gave a small stable improvement
+2026-05-09,direct_refine_rank1_caa6s0055c0105_f1.02_s1.00_u1.00_5seed.csv,0.68240,stronger CA-boundary direct-step weight produced a major public jump
+2026-05-09,direct_refine_rank2_caa6s0055c0105_f1.02_s1.04_u0.96_5seed.csv,0.68260,axis multiplier tilt on the CA-boundary direct-step model became the new public best
+2026-05-09,direct_micro_rank1_fromcaa6_f1.02_s1.06_u0.94.csv,0.68300,micro multiplier probe around the CA-boundary direct-step model produced the current public best
+2026-05-09,direct_micro_rank5_fromcaa6_f1.03_s1.04_u0.96.csv,0.68260,forward-only micro probe tied the previous best but did not improve

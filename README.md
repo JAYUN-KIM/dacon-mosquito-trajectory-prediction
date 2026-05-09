@@ -16,9 +16,9 @@
 ## 현재 성과
 
 <!-- AUTO:PROJECT_STATUS:START -->
-- 최고 Public LB: **0.67800**
-- 최신 최고점 갱신일: **2026-05-08**
-- 핵심 개선 축: scale-normalized pure direct-step local target + hit-boundary weighting
+- 최고 Public LB: **0.68300**
+- 최신 최고점 갱신일: **2026-05-09**
+- 핵심 개선 축: CA-boundary pure direct-step local target + axis multiplier micro-probe
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -84,6 +84,9 @@
 | `regime_hit_rank1_globalhitweighted_a0.00_f0.56_s0.58_u0.70.csv` | 0.67300 | regime router 축은 큰 돌파 없이 안전 변형 |
 | `direct_step_rank2_cadeltascaledlgbmboundary_f0.52_s0.58_u0.78.csv` | 0.67340 | scale-normalized CA residual LGBM |
 | `direct_step_pure_lgbmboundary_f1.02_s1.00_u1.00.csv` | **0.67800** | pure direct-step local target 새 최고점 |
+| `direct_refine_rank1_caa6s0055c0105_f1.02_s1.00_u1.00_5seed.csv` | 0.68240 | CA-boundary direct-step 5seed jump |
+| `direct_refine_rank2_caa6s0055c0105_f1.02_s1.04_u0.96_5seed.csv` | 0.68260 | side/up multiplier tilt |
+| `direct_micro_rank1_fromcaa6_f1.02_s1.06_u0.94.csv` | **0.68300** | 현재 최고점, multiplier micro-probe |
 
 ## 대표 실험 코드
 
@@ -101,6 +104,8 @@
 | `scripts/run_hit_weighted_breakthrough_refine.py` | 0.671 breakthrough 5-seed 안정화 |
 | `scripts/run_regime_hit_weighted_router.py` | motion regime별 hit-weighted router 실험 |
 | `scripts/run_direct_step_geometry.py` | direct-step target, scale-normalized residual, CatBoost/LGBM 비교 |
+| `scripts/run_direct_step_refine_20260509.py` | 0.678 direct-step branch의 weight/multiplier/5seed 확장 |
+| `scripts/make_direct_step_multiplier_probe_20260509.py` | 0.6826 주변 multiplier micro-probe 후보 생성 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -160,10 +165,13 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [2026-05-06 local-frame 실험 정리](docs/experiment_summary_2026-05-06.md)
 - [2026-05-07 hit-weighted breakthrough 정리](docs/experiment_summary_2026-05-07.md)
 - [2026-05-08 direct-step target 전환 실험 정리](docs/experiment_summary_2026-05-08.md)
+- [2026-05-09 direct-step refine 정리](docs/experiment_summary_2026-05-09.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
 - [direct-step geometry 리포트](reports/latest_direct_step_geometry.md)
+- [direct-step refine 리포트](reports/latest_direct_step_refine_20260509.md)
+- [direct-step multiplier probe 리포트](reports/latest_direct_multiplier_probe_20260509.md)
 
 ## 비고
 
