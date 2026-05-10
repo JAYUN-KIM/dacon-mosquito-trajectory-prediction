@@ -16,9 +16,9 @@
 ## 현재 성과
 
 <!-- AUTO:PROJECT_STATUS:START -->
-- 최고 Public LB: **0.68300**
-- 최신 최고점 갱신일: **2026-05-09**
-- 핵심 개선 축: CA-boundary pure direct-step local target + axis multiplier micro-probe
+- 최고 Public LB: **0.68360**
+- 최신 최고점 갱신일: **2026-05-10**
+- 핵심 개선 축: CA-boundary pure direct-step local target + selector confidence routing
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -59,6 +59,11 @@
    - sample별 motion scale로 target을 정규화한 뒤 추론 시 다시 복원하는 방식을 적용했습니다.
    - 순수 direct-step LGBM boundary 후보가 Public LB `0.67800`으로 새 최고점을 만들었습니다.
 
+7. Selector confidence routing
+   - direct-step 후보의 forward/side/up multiplier를 샘플별로 고르는 selector를 구성했습니다.
+   - hard routing은 과적합 위험이 있어 confidence가 높은 샘플만 선택적으로 route했습니다.
+   - `selector_conf0.55`가 `0.68340`, 이후 conf0.45 방향을 약하게 섞은 후보가 `0.68360`으로 현재 최고점을 만들었습니다.
+
 ## 주요 인사이트
 
 - 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
@@ -67,6 +72,8 @@
 - 가장 큰 돌파는 feature 수를 무작정 늘린 것이 아니라, `1cm hit 경계`를 직접 겨냥한 sample weighting에서 나왔습니다.
 - 2026-05-08 기준으로는 residual 보정 축보다 pure direct-step target 전환이 더 큰 public 개선을 만들었습니다.
 - Public과 CV가 완전히 일치하지 않으므로, 새 축은 빠르게 public probe하고 강한 신호가 나온 축만 확장하는 전략이 효과적입니다.
+- 2026-05-10 기준 selector/routing은 큰 돌파 축은 아니지만 public에서 재현된 얇은 개선 축입니다.
+- velocity smoothing/local frame denoising은 OOF proxy에서 크게 하락해 당분간 폐기합니다.
 
 ## Public Score 흐름
 
@@ -86,7 +93,12 @@
 | `direct_step_pure_lgbmboundary_f1.02_s1.00_u1.00.csv` | **0.67800** | pure direct-step local target 새 최고점 |
 | `direct_refine_rank1_caa6s0055c0105_f1.02_s1.00_u1.00_5seed.csv` | 0.68240 | CA-boundary direct-step 5seed jump |
 | `direct_refine_rank2_caa6s0055c0105_f1.02_s1.04_u0.96_5seed.csv` | 0.68260 | side/up multiplier tilt |
-| `direct_micro_rank1_fromcaa6_f1.02_s1.06_u0.94.csv` | **0.68300** | 현재 최고점, multiplier micro-probe |
+| `direct_micro_rank1_fromcaa6_f1.02_s1.06_u0.94.csv` | 0.68300 | multiplier micro-probe |
+| `direct_selector_rank1_selectorconf055.csv` | 0.68340 | sample-wise multiplier selector confidence routing |
+| `selector_adjust_rank1_extend115.csv` | 0.68340 | selector 방향 15% extension은 anchor와 동률 |
+| `selector_adjust_rank2_shrink075.csv` | 0.68320 | selector 이동 축소는 하락 |
+| `selector_adjust_rank4_conf45pull015.csv` | **0.68360** | 현재 최고점, conf0.45 route 방향 약한 보정 |
+| `selector_adjust_rank5_extend130.csv` | 0.68340 | selector 방향 30% extension은 추가 개선 없음 |
 
 ## 대표 실험 코드
 
@@ -106,6 +118,9 @@
 | `scripts/run_direct_step_geometry.py` | direct-step target, scale-normalized residual, CatBoost/LGBM 비교 |
 | `scripts/run_direct_step_refine_20260509.py` | 0.678 direct-step branch의 weight/multiplier/5seed 확장 |
 | `scripts/make_direct_step_multiplier_probe_20260509.py` | 0.6826 주변 multiplier micro-probe 후보 생성 |
+| `scripts/run_direct_multiplier_selector_20260510.py` | direct-step multiplier 후보를 샘플별로 고르는 selector/routing |
+| `scripts/make_selector_adjustment_candidates_20260510.py` | public에서 오른 selector 방향 주변 조정 후보 생성 |
+| `scripts/make_direct_velocity_smoothing_probe_20260510.py` | velocity smoothing/local frame denoising probe |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -166,12 +181,16 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [2026-05-07 hit-weighted breakthrough 정리](docs/experiment_summary_2026-05-07.md)
 - [2026-05-08 direct-step target 전환 실험 정리](docs/experiment_summary_2026-05-08.md)
 - [2026-05-09 direct-step refine 정리](docs/experiment_summary_2026-05-09.md)
+- [2026-05-10 selector routing 실험 정리](docs/experiment_summary_2026-05-10.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
 - [direct-step geometry 리포트](reports/latest_direct_step_geometry.md)
 - [direct-step refine 리포트](reports/latest_direct_step_refine_20260509.md)
 - [direct-step multiplier probe 리포트](reports/latest_direct_multiplier_probe_20260509.md)
+- [direct multiplier selector 리포트](reports/latest_direct_multiplier_selector_20260510.md)
+- [selector adjustment 리포트](reports/latest_selector_adjustments_20260510.md)
+- [velocity smoothing probe 리포트](reports/latest_direct_velocity_smoothing_probe_20260510.md)
 
 ## 비고
 

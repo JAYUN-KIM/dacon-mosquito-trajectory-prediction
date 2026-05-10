@@ -7,11 +7,12 @@
 - Windows: `C:\open\dacon-mosquito-trajectory-prediction`
 - WSL: `/mnt/c/open/dacon-mosquito-trajectory-prediction`
 
-## GitHub 레포명 추천
+## GitHub 레포
 
-- `dacon-mosquito-trajectory-prediction`
+- 원격 저장소: `https://github.com/JAYUN-KIM/dacon-mosquito-trajectory-prediction`
+- 브랜치: `main`
 
-현재 로컬 레포 골격은 만들어졌지만, 이 환경에는 `gh` CLI가 없어 GitHub 원격 레포 자동 생성은 아직 못 했다. GitHub에서 빈 레포를 만든 뒤 URL을 알려주면 원격 연결과 push를 진행하면 된다.
+사용자가 "깃허브 업로드해줘"라고 하면, 코드/문서/리포트 변경만 정리해서 한글 커밋 메시지로 push한다. 원본 데이터와 제출 CSV는 `.gitignore`로 제외한다.
 
 ## 대회 정보
 
@@ -82,6 +83,30 @@ def r_hit(pred, true):
 - 사전학습모델은 공개 가중치 및 허용 라이선스일 때만 사용 가능
 - 대회 기간 중 팀 외 비공식 코드/인사이트 공유는 Private Sharing으로 간주될 수 있음
 
+## 최신 성과
+
+- 현재 최고 Public LB: `0.68360`
+- 최고 제출 파일: `selector_adjust_rank4_conf45pull015.csv`
+- 갱신일: `2026-05-10`
+- 핵심 축: `CA-boundary pure direct-step local target + selector confidence routing`
+
+주요 흐름:
+
+1. 물리 baseline: `0.61539`
+2. LGBM residual: `0.63420`
+3. local-frame residual: `0.65900`
+4. hit-boundary weighted local-frame: `0.67100`
+5. direct-step local target: `0.67800`
+6. CA-boundary direct-step 5seed/multiplier: `0.68300`
+7. selector confidence routing: `0.68360`
+
+최신 판단:
+
+- selector/routing은 public에서 재현된 얇은 개선 축이다.
+- 단순히 selector 방향을 더 세게 미는 것보다, route confidence threshold와 route 대상 샘플 정의가 더 중요해 보인다.
+- velocity smoothing/local frame denoising은 OOF proxy에서 크게 하락해 당분간 폐기한다.
+- 다음은 `selector route refine 2개 + 새 축 3개` 비율이 좋다.
+
 ## 일정
 
 - 시작: 2026-05-04
@@ -116,4 +141,3 @@ DACON 모기 비행 궤적 예측 대회를 시작하자.
 먼저 레포 상태와 데이터 위치를 확인하고, 데이터가 있으면 EDA + baseline 제출 파일 생성까지 진행해줘.
 데이터가 없으면 data/raw/에 어떤 구조로 넣어야 하는지 안내해줘.
 ```
-
