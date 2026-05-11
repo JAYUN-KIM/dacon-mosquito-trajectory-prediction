@@ -86,8 +86,8 @@ def r_hit(pred, true):
 ## 최신 성과
 
 - 현재 최고 Public LB: `0.68440`
-- 최고 제출 파일: `direct_selector_rank2_selectorsoft.csv`
-- 갱신일: `2026-05-11`
+- 최고 제출 파일: `direct_selector_rank2_selectorsoft.csv`, `seedens_rank3_seedens3blend35.csv`
+- 최신 최고점 확인일: `2026-05-12`
 - 핵심 축: `CA-boundary pure direct-step local target + probability-weighted selector soft routing`
 
 주요 흐름:
@@ -100,14 +100,17 @@ def r_hit(pred, true):
 6. CA-boundary direct-step 5seed/multiplier: `0.68300`
 7. selector confidence routing: `0.68360`
 8. selector soft routing: `0.68440`
+9. selector seed ensemble blend: `0.68440`
 
 최신 판단:
 
 - selector/routing은 public에서 재현된 얇은 개선 축이다.
 - 2026-05-11에는 threshold/hard routing보다 selector probability를 그대로 평균하는 soft routing이 더 강했다.
 - `conf0.45` pull grid는 `0.68360`에서 포화됐고, `direct_selector_rank2_selectorsoft.csv`가 `0.68440`으로 최고점을 갱신했다.
+- 2026-05-12에는 temperature/top-k truncation은 `0.68420`, expanded pool은 `0.68400`, seed ensemble blend는 `0.68440`으로 최고점 동률이었다.
 - velocity smoothing/local frame denoising은 OOF proxy에서 크게 하락해 당분간 폐기한다.
-- 다음은 `selector_soft temperature`, `top-k probability truncation`, `boundary-only soft routing`, `soft selector와 anchor blend`를 우선한다.
+- 다음은 `boundary-only soft routing`, `route gain binary model`, `1cm hit 전환 가능성 직접 예측`을 우선한다.
+- 자동화는 2026-05-13 수요일부터 매일 23:00 연구, 23:30 GitHub 정리 업로드로 설정했다. 2026-05-12 화요일 23:00 실행은 제외했다.
 
 ## 일정
 

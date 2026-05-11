@@ -31,3 +31,8 @@ date,submission,public_score,notes
 2026-05-11,route_refine_rank3_conf45pull250.csv,0.68360,conf0.45 pull weight 0.25 tied the previous best with no extra gain
 2026-05-11,direct_selector_rank2_selectorsoft.csv,0.68440,probability-weighted soft selector produced the current public best
 2026-05-11,direct_selector_rank4_selectorconf045.csv,0.68420,full conf0.45 routing improved over the previous best but trailed selector soft
+2026-05-12,softtemp_rank8_top3t100.csv,0.68420,top-3 truncation of selector soft probability underperformed the full soft anchor
+2026-05-12,softtemp_rank1_softt075.csv,0.68420,sharper selector probability temperature underperformed the full soft anchor
+2026-05-12,seedens_rank1_seedens3.csv,0.68420,3-seed selector probability ensemble underperformed the full soft anchor
+2026-05-12,seedens_rank3_seedens3blend35.csv,0.68440,35% blend of 3-seed selector ensemble tied the current public best
+2026-05-12,expanded_selector_rank1_expandedsoftblend015.csv,0.68400,expanded multiplier candidate pool blend underperformed and should be deprioritized

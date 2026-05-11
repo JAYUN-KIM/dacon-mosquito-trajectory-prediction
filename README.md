@@ -17,7 +17,7 @@
 
 <!-- AUTO:PROJECT_STATUS:START -->
 - 최고 Public LB: **0.68440**
-- 최신 최고점 갱신일: **2026-05-11**
+- 최신 최고점 확인일: **2026-05-12**
 - 핵심 개선 축: CA-boundary pure direct-step local target + probability-weighted selector soft routing
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
@@ -68,6 +68,10 @@
    - threshold로 후보를 하나 고르는 대신, selector probability로 여러 multiplier 후보를 부드럽게 평균했습니다.
    - `conf0.45` pull grid는 `0.68360`에서 포화됐지만, `selector_soft`가 Public LB `0.68440`으로 새 최고점을 만들었습니다.
 
+9. Selector soft 후속 검증
+   - temperature, top-k truncation, expanded candidate pool, seed ensemble을 확인했습니다.
+   - seed ensemble blend는 `0.68440` 동률을 만들었지만, temperature/top-k와 expanded pool은 public에서 하락했습니다.
+
 ## 주요 인사이트
 
 - 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
@@ -79,6 +83,7 @@
 - 2026-05-10 기준 selector/routing은 큰 돌파 축은 아니지만 public에서 재현된 얇은 개선 축입니다.
 - velocity smoothing/local frame denoising은 OOF proxy에서 크게 하락해 당분간 폐기합니다.
 - 2026-05-11 기준 hard/threshold routing보다 selector 확률 분포를 그대로 쓰는 soft routing이 더 강했습니다.
+- 2026-05-12 기준 selector soft 후처리보다 route label 설계와 hit 전환 가능성 예측이 다음 연구 우선순위입니다.
 
 ## Public Score 흐름
 
@@ -109,6 +114,11 @@
 | `route_refine_rank3_conf45pull250.csv` | 0.68360 | conf0.45 pull 0.25도 기존 best와 동률 |
 | `direct_selector_rank4_selectorconf045.csv` | 0.68420 | full conf0.45 routing, 기존 best 대비 개선 |
 | `direct_selector_rank2_selectorsoft.csv` | **0.68440** | 현재 최고점, probability-weighted selector soft routing |
+| `softtemp_rank8_top3t100.csv` | 0.68420 | top-3 truncation은 full soft보다 약함 |
+| `softtemp_rank1_softt075.csv` | 0.68420 | sharper temperature도 full soft보다 약함 |
+| `seedens_rank1_seedens3.csv` | 0.68420 | selector seed ensemble 단독은 하락 |
+| `seedens_rank3_seedens3blend35.csv` | **0.68440** | seed ensemble blend는 현재 최고점과 동률 |
+| `expanded_selector_rank1_expandedsoftblend015.csv` | 0.68400 | expanded candidate pool은 public에서 약함 |
 
 ## 대표 실험 코드
 
@@ -132,6 +142,9 @@
 | `scripts/make_selector_adjustment_candidates_20260510.py` | public에서 오른 selector 방향 주변 조정 후보 생성 |
 | `scripts/make_direct_velocity_smoothing_probe_20260510.py` | velocity smoothing/local frame denoising probe |
 | `scripts/run_selector_route_refine_20260511.py` | conf0.45 pull grid와 continuous multiplier regression 후보 생성 |
+| `scripts/run_selector_soft_temperature_20260512.py` | selector soft temperature/top-k truncation 후보 생성 |
+| `scripts/run_expanded_selector_pool_20260512.py` | expanded multiplier candidate pool selector 실험 |
+| `scripts/run_selector_seed_ensemble_20260512.py` | selector probability seed ensemble 후보 생성 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -194,6 +207,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [2026-05-09 direct-step refine 정리](docs/experiment_summary_2026-05-09.md)
 - [2026-05-10 selector routing 실험 정리](docs/experiment_summary_2026-05-10.md)
 - [2026-05-11 selector soft routing 실험 정리](docs/experiment_summary_2026-05-11.md)
+- [2026-05-12 selector soft 후속 연구 정리](docs/experiment_summary_2026-05-12.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
@@ -204,6 +218,9 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [selector adjustment 리포트](reports/latest_selector_adjustments_20260510.md)
 - [velocity smoothing probe 리포트](reports/latest_direct_velocity_smoothing_probe_20260510.md)
 - [selector route refine 리포트](reports/latest_selector_route_refine_20260511.md)
+- [selector soft temperature 리포트](reports/latest_selector_soft_temperature_20260512.md)
+- [expanded selector pool 리포트](reports/latest_expanded_selector_pool_20260512.md)
+- [selector seed ensemble 리포트](reports/latest_selector_seed_ensemble_20260512.md)
 
 ## 비고
 
