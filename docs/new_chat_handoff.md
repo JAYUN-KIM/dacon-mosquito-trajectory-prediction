@@ -85,10 +85,10 @@ def r_hit(pred, true):
 
 ## 최신 성과
 
-- 현재 최고 Public LB: `0.68360`
-- 최고 제출 파일: `selector_adjust_rank4_conf45pull015.csv`
-- 갱신일: `2026-05-10`
-- 핵심 축: `CA-boundary pure direct-step local target + selector confidence routing`
+- 현재 최고 Public LB: `0.68440`
+- 최고 제출 파일: `direct_selector_rank2_selectorsoft.csv`
+- 갱신일: `2026-05-11`
+- 핵심 축: `CA-boundary pure direct-step local target + probability-weighted selector soft routing`
 
 주요 흐름:
 
@@ -99,13 +99,15 @@ def r_hit(pred, true):
 5. direct-step local target: `0.67800`
 6. CA-boundary direct-step 5seed/multiplier: `0.68300`
 7. selector confidence routing: `0.68360`
+8. selector soft routing: `0.68440`
 
 최신 판단:
 
 - selector/routing은 public에서 재현된 얇은 개선 축이다.
-- 단순히 selector 방향을 더 세게 미는 것보다, route confidence threshold와 route 대상 샘플 정의가 더 중요해 보인다.
+- 2026-05-11에는 threshold/hard routing보다 selector probability를 그대로 평균하는 soft routing이 더 강했다.
+- `conf0.45` pull grid는 `0.68360`에서 포화됐고, `direct_selector_rank2_selectorsoft.csv`가 `0.68440`으로 최고점을 갱신했다.
 - velocity smoothing/local frame denoising은 OOF proxy에서 크게 하락해 당분간 폐기한다.
-- 다음은 `selector route refine 2개 + 새 축 3개` 비율이 좋다.
+- 다음은 `selector_soft temperature`, `top-k probability truncation`, `boundary-only soft routing`, `soft selector와 anchor blend`를 우선한다.
 
 ## 일정
 

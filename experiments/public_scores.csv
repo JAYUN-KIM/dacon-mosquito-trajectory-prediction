@@ -26,3 +26,8 @@ date,submission,public_score,notes
 2026-05-10,selector_adjust_rank2_shrink075.csv,0.68320,shrinking the selector movement reduced public score and confirmed the route signal should not be weakened too much
 2026-05-10,selector_adjust_rank4_conf45pull015.csv,0.68360,slightly wider confidence routing around selector_conf0.55 produced the current public best
 2026-05-10,selector_adjust_rank5_extend130.csv,0.68340,more aggressive extension of the selector movement tied but did not beat the selector anchor
+2026-05-11,route_refine_rank2_conf45pull200.csv,0.68360,conf0.45 pull weight 0.20 tied the previous best and showed the pull grid was saturated
+2026-05-11,route_refine_rank1_conf45pull100.csv,0.68360,conf0.45 pull weight 0.10 also tied the previous best
+2026-05-11,route_refine_rank3_conf45pull250.csv,0.68360,conf0.45 pull weight 0.25 tied the previous best with no extra gain
+2026-05-11,direct_selector_rank2_selectorsoft.csv,0.68440,probability-weighted soft selector produced the current public best
+2026-05-11,direct_selector_rank4_selectorconf045.csv,0.68420,full conf0.45 routing improved over the previous best but trailed selector soft
