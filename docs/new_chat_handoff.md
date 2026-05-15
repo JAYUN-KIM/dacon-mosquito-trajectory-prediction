@@ -89,6 +89,8 @@ def r_hit(pred, true):
 - 최고 제출 파일: `direct_selector_rank2_selectorsoft.csv`, `seedens_rank3_seedens3blend35.csv`
 - 최신 최고점 확인일: `2026-05-12`
 - 핵심 축: `CA-boundary pure direct-step local target + probability-weighted selector soft routing`
+- 최신 새 축 검토일: `2026-05-15`
+- 최신 판단: route gain binary fallback과 analog residual correction은 public에서 최고 `0.68360`으로 약해 주력 축에서 내림
 
 주요 흐름:
 
@@ -101,6 +103,7 @@ def r_hit(pred, true):
 7. selector confidence routing: `0.68360`
 8. selector soft routing: `0.68440`
 9. selector seed ensemble blend: `0.68440`
+10. route gain / analog residual correction: `0.68360` 이하
 
 최신 판단:
 
@@ -108,9 +111,11 @@ def r_hit(pred, true):
 - 2026-05-11에는 threshold/hard routing보다 selector probability를 그대로 평균하는 soft routing이 더 강했다.
 - `conf0.45` pull grid는 `0.68360`에서 포화됐고, `direct_selector_rank2_selectorsoft.csv`가 `0.68440`으로 최고점을 갱신했다.
 - 2026-05-12에는 temperature/top-k truncation은 `0.68420`, expanded pool은 `0.68400`, seed ensemble blend는 `0.68440`으로 최고점 동률이었다.
+- 2026-05-15에는 route gain fallback 후보 2개가 `0.68420`, analog residual correction 후보 3개가 `0.68300`, `0.68300`, `0.68360`으로 나와 새 축이지만 public에서는 약했다.
+- analog residual correction은 외부 논문 아이디어를 참고했지만 외부 데이터는 직접 섞지 않고 train-only nearest-neighbor residual prior로 구현했다.
 - velocity smoothing/local frame denoising은 OOF proxy에서 크게 하락해 당분간 폐기한다.
-- 다음은 `boundary-only soft routing`, `route gain binary model`, `1cm hit 전환 가능성 직접 예측`을 우선한다.
-- 자동화는 2026-05-13 수요일부터 매일 23:00 연구, 23:30 GitHub 정리 업로드로 설정했다. 2026-05-12 화요일 23:00 실행은 제외했다.
+- 다음은 기존 selector/analog를 더 미세 조정하기보다 `sequence representation learning`, `pseudo hit probability calibration`, `axis-wise uncertainty modeling`, `hidden regime clustering` 같은 완전히 다른 새 축을 우선한다.
+- 자동화는 사용자가 돌아온 뒤 해제 요청했으므로 현재 PAUSED 상태다.
 
 ## 일정
 

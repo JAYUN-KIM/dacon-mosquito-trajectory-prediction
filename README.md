@@ -19,6 +19,7 @@
 - 최고 Public LB: **0.68440**
 - 최신 최고점 확인일: **2026-05-12**
 - 핵심 개선 축: CA-boundary pure direct-step local target + probability-weighted selector soft routing
+- 최신 새 축 검토: 2026-05-15 route gain / analog residual correction은 최고 **0.68360**으로 약세
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -72,6 +73,10 @@
    - temperature, top-k truncation, expanded candidate pool, seed ensemble을 확인했습니다.
    - seed ensemble blend는 `0.68440` 동률을 만들었지만, temperature/top-k와 expanded pool은 public에서 하락했습니다.
 
+10. 새 축 재탐색
+   - route gain binary fallback과 analog residual correction을 테스트했습니다.
+   - OOF에서는 약한 개선 신호가 있었지만, public에서는 `0.68300 ~ 0.68360`으로 하락해 주력 축에서 내렸습니다.
+
 ## 주요 인사이트
 
 - 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
@@ -84,6 +89,7 @@
 - velocity smoothing/local frame denoising은 OOF proxy에서 크게 하락해 당분간 폐기합니다.
 - 2026-05-11 기준 hard/threshold routing보다 selector 확률 분포를 그대로 쓰는 soft routing이 더 강했습니다.
 - 2026-05-12 기준 selector soft 후처리보다 route label 설계와 hit 전환 가능성 예측이 다음 연구 우선순위입니다.
+- 2026-05-15 기준 route gain과 analog residual correction은 public에서 약해, 다음은 완전히 다른 새 축을 우선합니다.
 
 ## Public Score 흐름
 
@@ -119,6 +125,10 @@
 | `seedens_rank1_seedens3.csv` | 0.68420 | selector seed ensemble 단독은 하락 |
 | `seedens_rank3_seedens3blend35.csv` | **0.68440** | seed ensemble blend는 현재 최고점과 동률 |
 | `expanded_selector_rank1_expandedsoftblend015.csv` | 0.68400 | expanded candidate pool은 public에서 약함 |
+| `route_gain_top_candidates` | 0.68420 | route gain fallback 후보 2개 모두 best 아래 |
+| `analogres_rank1_k64s010.csv` | 0.68300 | analog residual correction OOF 1위였지만 public 약세 |
+| `analogres_rank2_k96s015.csv` | 0.68300 | stronger analog correction도 개선 없음 |
+| `analogres_rank3_k128s010.csv` | 0.68360 | analog 계열 중 최고지만 best 미달 |
 
 ## 대표 실험 코드
 
@@ -145,6 +155,8 @@
 | `scripts/run_selector_soft_temperature_20260512.py` | selector soft temperature/top-k truncation 후보 생성 |
 | `scripts/run_expanded_selector_pool_20260512.py` | expanded multiplier candidate pool selector 실험 |
 | `scripts/run_selector_seed_ensemble_20260512.py` | selector probability seed ensemble 후보 생성 |
+| `scripts/run_route_gain_model_20260515.py` | selector soft 실패 위험 샘플 fallback 후보 생성 |
+| `scripts/run_analog_residual_correction_20260515.py` | 유사 궤적 OOF 잔차 보정 후보 생성 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -208,6 +220,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [2026-05-10 selector routing 실험 정리](docs/experiment_summary_2026-05-10.md)
 - [2026-05-11 selector soft routing 실험 정리](docs/experiment_summary_2026-05-11.md)
 - [2026-05-12 selector soft 후속 연구 정리](docs/experiment_summary_2026-05-12.md)
+- [2026-05-15 새 축 재탐색 정리](docs/experiment_summary_2026-05-15.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
@@ -221,6 +234,8 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [selector soft temperature 리포트](reports/latest_selector_soft_temperature_20260512.md)
 - [expanded selector pool 리포트](reports/latest_expanded_selector_pool_20260512.md)
 - [selector seed ensemble 리포트](reports/latest_selector_seed_ensemble_20260512.md)
+- [route gain model 리포트](reports/latest_route_gain_model_20260515.md)
+- [analog residual correction 리포트](reports/latest_analog_residual_correction_20260515.md)
 
 ## 비고
 

@@ -36,3 +36,7 @@ date,submission,public_score,notes
 2026-05-12,seedens_rank1_seedens3.csv,0.68420,3-seed selector probability ensemble underperformed the full soft anchor
 2026-05-12,seedens_rank3_seedens3blend35.csv,0.68440,35% blend of 3-seed selector ensemble tied the current public best
 2026-05-12,expanded_selector_rank1_expandedsoftblend015.csv,0.68400,expanded multiplier candidate pool blend underperformed and should be deprioritized
+2026-05-15,route_gain_top_candidates,0.68420,two route-gain fallback candidates tied below the selector-soft public best
+2026-05-15,analogres_rank1_k64s010.csv,0.68300,analog residual correction OOF rank 1 underperformed on public
+2026-05-15,analogres_rank2_k96s015.csv,0.68300,stronger analog residual correction also underperformed on public
+2026-05-15,analogres_rank3_k128s010.csv,0.68360,best public analog residual candidate still trailed selector-soft anchor
