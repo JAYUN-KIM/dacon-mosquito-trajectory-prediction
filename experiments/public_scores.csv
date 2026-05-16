@@ -40,3 +40,8 @@ date,submission,public_score,notes
 2026-05-15,analogres_rank1_k64s010.csv,0.68300,analog residual correction OOF rank 1 underperformed on public
 2026-05-15,analogres_rank2_k96s015.csv,0.68300,stronger analog residual correction also underperformed on public
 2026-05-15,analogres_rank3_k128s010.csv,0.68360,best public analog residual candidate still trailed selector-soft anchor
+2026-05-16,hitprob_rank1_anchorblendtop3p4w015.csv,0.68420,candidate-level hit probability router underperformed the selector-soft anchor
+2026-05-16,hitprob_extra_top3blend030.csv,0.68420,stronger hit-probability top3 blend still underperformed
+2026-05-16,temporalbc_rank1_anchorblend35_tbc678w020_f1.02_s1.00_u1.00.csv,0.68620,temporal-backcast augmentation confirmed a new public-improving axis
+2026-05-16,temporalbc_rank1_anchorblend50_tbc678w020_f1.02_s1.00_u1.00.csv,0.68780,50% blend with temporal-backcast model produced the new public best
+2026-05-16,temporalbc_rank1_tbc678w020_f1.02_s1.00_u1.00.csv,0.68640,pure temporal-backcast model was strong but weaker than the 50% anchor blend

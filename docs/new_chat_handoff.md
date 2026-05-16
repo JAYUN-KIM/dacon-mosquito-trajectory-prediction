@@ -85,12 +85,12 @@ def r_hit(pred, true):
 
 ## 최신 성과
 
-- 현재 최고 Public LB: `0.68440`
-- 최고 제출 파일: `direct_selector_rank2_selectorsoft.csv`, `seedens_rank3_seedens3blend35.csv`
-- 최신 최고점 확인일: `2026-05-12`
-- 핵심 축: `CA-boundary pure direct-step local target + probability-weighted selector soft routing`
-- 최신 새 축 검토일: `2026-05-15`
-- 최신 판단: route gain binary fallback과 analog residual correction은 public에서 최고 `0.68360`으로 약해 주력 축에서 내림
+- 현재 최고 Public LB: `0.68780`
+- 최고 제출 파일: `temporalbc_rank1_anchorblend50_tbc678w020_f1.02_s1.00_u1.00.csv`
+- 최신 최고점 확인일: `2026-05-16`
+- 핵심 축: `temporal-backcast pseudo-supervision + public-best anchor 50% blend`
+- 최신 새 축 검토일: `2026-05-16`
+- 최신 판단: temporal-backcast augmentation이 기존 selector-soft 최고 `0.68440`을 `0.68780`으로 갱신했으므로 새 주력축으로 승격
 
 주요 흐름:
 
@@ -104,6 +104,7 @@ def r_hit(pred, true):
 8. selector soft routing: `0.68440`
 9. selector seed ensemble blend: `0.68440`
 10. route gain / analog residual correction: `0.68360` 이하
+11. temporal-backcast 50% anchor blend: `0.68780`
 
 최신 판단:
 
@@ -113,8 +114,10 @@ def r_hit(pred, true):
 - 2026-05-12에는 temperature/top-k truncation은 `0.68420`, expanded pool은 `0.68400`, seed ensemble blend는 `0.68440`으로 최고점 동률이었다.
 - 2026-05-15에는 route gain fallback 후보 2개가 `0.68420`, analog residual correction 후보 3개가 `0.68300`, `0.68300`, `0.68360`으로 나와 새 축이지만 public에서는 약했다.
 - analog residual correction은 외부 논문 아이디어를 참고했지만 외부 데이터는 직접 섞지 않고 train-only nearest-neighbor residual prior로 구현했다.
+- 2026-05-16에는 hit-probability router 후보 2개가 `0.68420`으로 약했지만, temporal-backcast pseudo-supervision이 `0.68620`, `0.68780`, `0.68640`을 기록하며 새 돌파구가 됐다.
+- temporal-backcast 단독보다 기존 selector-soft anchor와 50% blend한 후보가 가장 강했다. 현재는 `50~55%` 주변 blend strength와 nearby temporal direction ensemble을 내일 우선 제출한다.
 - velocity smoothing/local frame denoising은 OOF proxy에서 크게 하락해 당분간 폐기한다.
-- 다음은 기존 selector/analog를 더 미세 조정하기보다 `sequence representation learning`, `pseudo hit probability calibration`, `axis-wise uncertainty modeling`, `hidden regime clustering` 같은 완전히 다른 새 축을 우선한다.
+- 다음은 `temporalbc_refine_r1f102s100u100_w52.csv`, `temporalbc_refine_r1f102s100u100_w55.csv`, `temporalbc_refine_avgr1r2_w52.csv`, `temporalbc_refine_r2f102s104u096_w52.csv`, `temporalbc_refine_avgr1r2r3_w52.csv` 순서로 public probe한다.
 - 자동화는 사용자가 돌아온 뒤 해제 요청했으므로 현재 PAUSED 상태다.
 
 ## 일정

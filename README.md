@@ -16,10 +16,10 @@
 ## 현재 성과
 
 <!-- AUTO:PROJECT_STATUS:START -->
-- 최고 Public LB: **0.68440**
-- 최신 최고점 확인일: **2026-05-12**
-- 핵심 개선 축: CA-boundary pure direct-step local target + probability-weighted selector soft routing
-- 최신 새 축 검토: 2026-05-15 route gain / analog residual correction은 최고 **0.68360**으로 약세
+- 최고 Public LB: **0.68780**
+- 최신 최고점 확인일: **2026-05-16**
+- 핵심 개선 축: temporal-backcast pseudo-supervision + public-best anchor 50% blend
+- 최신 새 축 검토: 2026-05-16 temporal-backcast augmentation이 기존 최고 `0.68440`에서 **0.68780**으로 개선
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -77,6 +77,11 @@
    - route gain binary fallback과 analog residual correction을 테스트했습니다.
    - OOF에서는 약한 개선 신호가 있었지만, public에서는 `0.68300 ~ 0.68360`으로 하락해 주력 축에서 내렸습니다.
 
+11. Temporal-backcast pseudo-supervision
+   - train 궤적 내부 시점 `c=6,7,8`을 현재로 보고 `c+2`를 pseudo target으로 삼아 학습 데이터를 확장했습니다.
+   - 부족한 앞쪽 history는 초기 속도 기반 backcast로 채워 11점 입력 구조를 유지했습니다.
+   - temporal-backcast 모델 단독은 `0.68640`, 기존 public-best anchor와 50% blend한 후보는 `0.68780`으로 새 최고점을 만들었습니다.
+
 ## 주요 인사이트
 
 - 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
@@ -90,6 +95,8 @@
 - 2026-05-11 기준 hard/threshold routing보다 selector 확률 분포를 그대로 쓰는 soft routing이 더 강했습니다.
 - 2026-05-12 기준 selector soft 후처리보다 route label 설계와 hit 전환 가능성 예측이 다음 연구 우선순위입니다.
 - 2026-05-15 기준 route gain과 analog residual correction은 public에서 약해, 다음은 완전히 다른 새 축을 우선합니다.
+- 2026-05-16 기준 궤적 내부 pseudo-supervision을 활용하는 temporal-backcast 축이 가장 강한 새 돌파구입니다.
+- temporal-backcast는 단독보다 기존 selector-soft anchor와 `50%` 전후로 섞을 때 public에서 더 강했습니다.
 
 ## Public Score 흐름
 
@@ -129,6 +136,11 @@
 | `analogres_rank1_k64s010.csv` | 0.68300 | analog residual correction OOF 1위였지만 public 약세 |
 | `analogres_rank2_k96s015.csv` | 0.68300 | stronger analog correction도 개선 없음 |
 | `analogres_rank3_k128s010.csv` | 0.68360 | analog 계열 중 최고지만 best 미달 |
+| `hitprob_rank1_anchorblendtop3p4w015.csv` | 0.68420 | 후보별 hit 확률 라우터는 best보다 약함 |
+| `hitprob_extra_top3blend030.csv` | 0.68420 | hit-prob 방향을 더 키워도 개선 없음 |
+| `temporalbc_rank1_anchorblend35_tbc678w020_f1.02_s1.00_u1.00.csv` | 0.68620 | temporal-backcast 축 유효성 확인 |
+| `temporalbc_rank1_anchorblend50_tbc678w020_f1.02_s1.00_u1.00.csv` | **0.68780** | 현재 최고점, temporal-backcast 50% blend |
+| `temporalbc_rank1_tbc678w020_f1.02_s1.00_u1.00.csv` | 0.68640 | temporal-backcast 단독은 강하지만 50% blend보다 약함 |
 
 ## 대표 실험 코드
 
@@ -157,6 +169,9 @@
 | `scripts/run_selector_seed_ensemble_20260512.py` | selector probability seed ensemble 후보 생성 |
 | `scripts/run_route_gain_model_20260515.py` | selector soft 실패 위험 샘플 fallback 후보 생성 |
 | `scripts/run_analog_residual_correction_20260515.py` | 유사 궤적 OOF 잔차 보정 후보 생성 |
+| `scripts/run_hit_probability_router_20260516.py` | 후보별 1cm hit probability 라우터 실험 |
+| `scripts/run_temporal_backcast_augmentation_20260516.py` | 궤적 내부 pseudo-supervision temporal-backcast 후보 생성 |
+| `scripts/make_temporal_backcast_refine_candidates_20260516.py` | temporal-backcast 50% 주변 blend/refine 후보 생성 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -221,6 +236,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [2026-05-11 selector soft routing 실험 정리](docs/experiment_summary_2026-05-11.md)
 - [2026-05-12 selector soft 후속 연구 정리](docs/experiment_summary_2026-05-12.md)
 - [2026-05-15 새 축 재탐색 정리](docs/experiment_summary_2026-05-15.md)
+- [2026-05-16 temporal-backcast breakthrough 정리](docs/experiment_summary_2026-05-16.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
@@ -236,6 +252,9 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [selector seed ensemble 리포트](reports/latest_selector_seed_ensemble_20260512.md)
 - [route gain model 리포트](reports/latest_route_gain_model_20260515.md)
 - [analog residual correction 리포트](reports/latest_analog_residual_correction_20260515.md)
+- [hit probability router 리포트](reports/latest_hit_probability_router_20260516.md)
+- [temporal-backcast augmentation 리포트](reports/latest_temporal_backcast_augmentation_20260516.md)
+- [temporal-backcast refine 리포트](reports/latest_temporal_backcast_refine_20260516.md)
 
 ## 비고
 
