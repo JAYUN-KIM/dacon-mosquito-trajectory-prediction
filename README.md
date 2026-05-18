@@ -16,10 +16,10 @@
 ## 현재 성과
 
 <!-- AUTO:PROJECT_STATUS:START -->
-- 최고 Public LB: **0.68780**
-- 최신 최고점 확인일: **2026-05-16**
-- 핵심 개선 축: temporal-backcast pseudo-supervision + public-best anchor 50% blend
-- 최신 새 축 검토: 2026-05-16 temporal-backcast augmentation이 기존 최고 `0.68440`에서 **0.68780**으로 개선
+- 최고 Public LB: **0.69000**
+- 최신 최고점 확인일: **2026-05-18**
+- 핵심 개선 축: temporal-backcast pseudo-supervision + constant-turn curvature correction
+- 최신 새 축 검토: 2026-05-18 constant-turn curvature correction이 temporal best `0.68880`에서 **0.69000**으로 개선
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -82,6 +82,11 @@
    - 부족한 앞쪽 history는 초기 속도 기반 backcast로 채워 11점 입력 구조를 유지했습니다.
    - temporal-backcast 모델 단독은 `0.68640`, 기존 public-best anchor와 50% blend한 후보는 `0.68780`으로 새 최고점을 만들었습니다.
 
+12. Constant-turn curvature correction
+   - 최근 속도 방향의 3D 회전량을 추정해 +80ms 동안 같은 방향으로 휘어진다고 가정했습니다.
+   - constant-turn 단독 예측 대신 `(constant_turn - constant_velocity)` correction만 강한 temporal anchor에 작게 더했습니다.
+   - `anchor_alpha=0.09` 후보가 Public LB `0.69000`으로 새 최고점을 만들었습니다.
+
 ## 주요 인사이트
 
 - 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
@@ -97,6 +102,8 @@
 - 2026-05-15 기준 route gain과 analog residual correction은 public에서 약해, 다음은 완전히 다른 새 축을 우선합니다.
 - 2026-05-16 기준 궤적 내부 pseudo-supervision을 활용하는 temporal-backcast 축이 가장 강한 새 돌파구입니다.
 - temporal-backcast는 단독보다 기존 selector-soft anchor와 `50%` 전후로 섞을 때 public에서 더 강했습니다.
+- 2026-05-18 기준 temporal-backcast는 `55%` 근처에서 포화됐고, 그 위에 constant-turn curvature correction을 작게 더하는 방식이 추가 돌파를 만들었습니다.
+- curvature correction은 단독 모델이 아니라 강한 anchor 위에 `0.08~0.10` 수준으로 얹을 때 가장 안정적입니다.
 
 ## Public Score 흐름
 
@@ -139,8 +146,15 @@
 | `hitprob_rank1_anchorblendtop3p4w015.csv` | 0.68420 | 후보별 hit 확률 라우터는 best보다 약함 |
 | `hitprob_extra_top3blend030.csv` | 0.68420 | hit-prob 방향을 더 키워도 개선 없음 |
 | `temporalbc_rank1_anchorblend35_tbc678w020_f1.02_s1.00_u1.00.csv` | 0.68620 | temporal-backcast 축 유효성 확인 |
-| `temporalbc_rank1_anchorblend50_tbc678w020_f1.02_s1.00_u1.00.csv` | **0.68780** | 현재 최고점, temporal-backcast 50% blend |
+| `temporalbc_rank1_anchorblend50_tbc678w020_f1.02_s1.00_u1.00.csv` | 0.68780 | temporal-backcast 50% blend |
 | `temporalbc_rank1_tbc678w020_f1.02_s1.00_u1.00.csv` | 0.68640 | temporal-backcast 단독은 강하지만 50% blend보다 약함 |
+| `temporalbc_refine_r1f102s100u100_w52.csv` | 0.68800 | 52% temporal blend 추가 개선 |
+| `temporalbc_refine_r1f102s100u100_w55.csv` | 0.68880 | temporal-only strength 최적점 근처 |
+| `temporalbc_refine_avgr1r2_w52.csv` | 0.68820 | temporal direction ensemble은 rank1보다 약함 |
+| `temporalbc_refine_truew555_r1f102s100u100.csv` | 0.68860 | true 55.5% blend는 기존 w55보다 약함 |
+| `turncurve_rank1_temporalbest_w1tm0p25s0p5d0p98_a08.csv` | 0.68940 | constant-turn curvature correction 유효성 확인 |
+| `turncurve_refine_temporalbest_w1tm0p25s0p5d0p98_a09.csv` | **0.69000** | 현재 최고점, curvature correction alpha 0.09 |
+| `turncurve_refine_temporalbest_w1tm0p25s0p5d0p98_a10.csv` | 0.68960 | alpha 0.10은 0.09보다 약함 |
 
 ## 대표 실험 코드
 
@@ -172,6 +186,7 @@
 | `scripts/run_hit_probability_router_20260516.py` | 후보별 1cm hit probability 라우터 실험 |
 | `scripts/run_temporal_backcast_augmentation_20260516.py` | 궤적 내부 pseudo-supervision temporal-backcast 후보 생성 |
 | `scripts/make_temporal_backcast_refine_candidates_20260516.py` | temporal-backcast 50% 주변 blend/refine 후보 생성 |
+| `scripts/run_constant_turn_curvature_20260518.py` | constant-turn curvature correction 후보 생성 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -237,6 +252,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [2026-05-12 selector soft 후속 연구 정리](docs/experiment_summary_2026-05-12.md)
 - [2026-05-15 새 축 재탐색 정리](docs/experiment_summary_2026-05-15.md)
 - [2026-05-16 temporal-backcast breakthrough 정리](docs/experiment_summary_2026-05-16.md)
+- [2026-05-18 constant-turn curvature breakthrough 정리](docs/experiment_summary_2026-05-18.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
@@ -255,6 +271,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [hit probability router 리포트](reports/latest_hit_probability_router_20260516.md)
 - [temporal-backcast augmentation 리포트](reports/latest_temporal_backcast_augmentation_20260516.md)
 - [temporal-backcast refine 리포트](reports/latest_temporal_backcast_refine_20260516.md)
+- [constant-turn curvature 리포트](reports/latest_constant_turn_curvature_20260518.md)
 
 ## 비고
 

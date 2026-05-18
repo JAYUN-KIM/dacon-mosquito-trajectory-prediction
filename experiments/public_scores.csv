@@ -45,3 +45,10 @@ date,submission,public_score,notes
 2026-05-16,temporalbc_rank1_anchorblend35_tbc678w020_f1.02_s1.00_u1.00.csv,0.68620,temporal-backcast augmentation confirmed a new public-improving axis
 2026-05-16,temporalbc_rank1_anchorblend50_tbc678w020_f1.02_s1.00_u1.00.csv,0.68780,50% blend with temporal-backcast model produced the new public best
 2026-05-16,temporalbc_rank1_tbc678w020_f1.02_s1.00_u1.00.csv,0.68640,pure temporal-backcast model was strong but weaker than the 50% anchor blend
+2026-05-17,temporalbc_refine_r1f102s100u100_w52.csv,0.68800,52% temporal-backcast blend improved over the first 50% probe
+2026-05-18,temporalbc_refine_r1f102s100u100_w55.csv,0.68880,55% temporal-backcast blend became the best temporal-only strength
+2026-05-18,temporalbc_refine_avgr1r2_w52.csv,0.68820,temporal direction ensemble was positive but weaker than rank1 55% blend
+2026-05-18,temporalbc_refine_truew555_r1f102s100u100.csv,0.68860,true 55.5% temporal blend trailed the earlier w55 candidate
+2026-05-18,turncurve_rank1_temporalbest_w1tm0p25s0p5d0p98_a08.csv,0.68940,constant-turn curvature correction confirmed a new physics correction axis
+2026-05-18,turncurve_refine_temporalbest_w1tm0p25s0p5d0p98_a09.csv,0.69000,0.09 curvature correction alpha produced the new public best
+2026-05-18,turncurve_refine_temporalbest_w1tm0p25s0p5d0p98_a10.csv,0.68960,larger 0.10 curvature correction trailed the 0.09 peak

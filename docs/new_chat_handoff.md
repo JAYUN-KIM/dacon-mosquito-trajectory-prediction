@@ -85,12 +85,12 @@ def r_hit(pred, true):
 
 ## 최신 성과
 
-- 현재 최고 Public LB: `0.68780`
-- 최고 제출 파일: `temporalbc_rank1_anchorblend50_tbc678w020_f1.02_s1.00_u1.00.csv`
-- 최신 최고점 확인일: `2026-05-16`
-- 핵심 축: `temporal-backcast pseudo-supervision + public-best anchor 50% blend`
-- 최신 새 축 검토일: `2026-05-16`
-- 최신 판단: temporal-backcast augmentation이 기존 selector-soft 최고 `0.68440`을 `0.68780`으로 갱신했으므로 새 주력축으로 승격
+- 현재 최고 Public LB: `0.69000`
+- 최고 제출 파일: `turncurve_refine_temporalbest_w1tm0p25s0p5d0p98_a09.csv`
+- 최신 최고점 확인일: `2026-05-18`
+- 핵심 축: `temporal-backcast pseudo-supervision + constant-turn curvature correction`
+- 최신 새 축 검토일: `2026-05-18`
+- 최신 판단: temporal-backcast 55%가 `0.68880`까지 오른 뒤, constant-turn curvature correction alpha 0.09가 `0.69000`으로 새 최고점을 갱신했다.
 
 주요 흐름:
 
@@ -104,7 +104,8 @@ def r_hit(pred, true):
 8. selector soft routing: `0.68440`
 9. selector seed ensemble blend: `0.68440`
 10. route gain / analog residual correction: `0.68360` 이하
-11. temporal-backcast 50% anchor blend: `0.68780`
+11. temporal-backcast 55% anchor blend: `0.68880`
+12. constant-turn curvature correction: `0.69000`
 
 최신 판단:
 
@@ -115,9 +116,10 @@ def r_hit(pred, true):
 - 2026-05-15에는 route gain fallback 후보 2개가 `0.68420`, analog residual correction 후보 3개가 `0.68300`, `0.68300`, `0.68360`으로 나와 새 축이지만 public에서는 약했다.
 - analog residual correction은 외부 논문 아이디어를 참고했지만 외부 데이터는 직접 섞지 않고 train-only nearest-neighbor residual prior로 구현했다.
 - 2026-05-16에는 hit-probability router 후보 2개가 `0.68420`으로 약했지만, temporal-backcast pseudo-supervision이 `0.68620`, `0.68780`, `0.68640`을 기록하며 새 돌파구가 됐다.
-- temporal-backcast 단독보다 기존 selector-soft anchor와 50% blend한 후보가 가장 강했다. 현재는 `50~55%` 주변 blend strength와 nearby temporal direction ensemble을 내일 우선 제출한다.
+- 2026-05-17/18에는 temporal-backcast refine으로 `w52=0.68800`, `w55=0.68880`, `avg_r1r2_w52=0.68820`, `truew555=0.68860`을 확인했다. temporal-only 최적은 55% 근처로 보인다.
+- 2026-05-18에는 constant-turn curvature correction을 새 축으로 추가했다. `a08=0.68940`, `a09=0.69000`, `a10=0.68960`으로 alpha 0.09가 현재 최고다.
 - velocity smoothing/local frame denoising은 OOF proxy에서 크게 하락해 당분간 폐기한다.
-- 다음은 `temporalbc_refine_r1f102s100u100_w52.csv`, `temporalbc_refine_r1f102s100u100_w55.csv`, `temporalbc_refine_avgr1r2_w52.csv`, `temporalbc_refine_r2f102s104u096_w52.csv`, `temporalbc_refine_avgr1r2r3_w52.csv` 순서로 public probe한다.
+- 다음은 curvature alpha `0.085`, `0.090`, `0.095` 초정밀 후보와 curvature gate 모델을 우선한다. 기존 후보 중에는 `turncurve_refine_temporalbest_w1tm0p25s0p5d0p98_a07.csv`가 peak 왼쪽 확인용으로 남아 있다.
 - 자동화는 사용자가 돌아온 뒤 해제 요청했으므로 현재 PAUSED 상태다.
 
 ## 일정
