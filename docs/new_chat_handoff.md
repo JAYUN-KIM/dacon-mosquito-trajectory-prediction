@@ -85,12 +85,12 @@ def r_hit(pred, true):
 
 ## 최신 성과
 
-- 현재 최고 Public LB: `0.69000`
-- 최고 제출 파일: `turncurve_refine_temporalbest_w1tm0p25s0p5d0p98_a09.csv`
-- 최신 최고점 확인일: `2026-05-18`
-- 핵심 축: `temporal-backcast pseudo-supervision + constant-turn curvature correction`
-- 최신 새 축 검토일: `2026-05-18`
-- 최신 판단: temporal-backcast 55%가 `0.68880`까지 오른 뒤, constant-turn curvature correction alpha 0.09가 `0.69000`으로 새 최고점을 갱신했다.
+- 현재 최고 Public LB: `0.69120`
+- 최고 제출 파일: `curvgate_refine_rank2_gatet52a105.csv`
+- 최신 최고점 확인일: `2026-05-19`
+- 핵심 축: `temporal-backcast pseudo-supervision + constant-turn curvature correction + sample-wise curvature gate`
+- 최신 새 축 검토일: `2026-05-19`
+- 최신 판단: constant-turn correction을 모든 샘플에 동일 적용하는 것보다 gate probability가 중간 이상인 샘플에만 `alpha=0.105`를 적용하는 방식이 강했다. `threshold=0.52` 후보가 `0.69120`으로 새 최고점을 만들었고, low-confidence correction과 residual-on-gate는 `0.69040`으로 하락했다.
 
 주요 흐름:
 
@@ -106,6 +106,7 @@ def r_hit(pred, true):
 10. route gain / analog residual correction: `0.68360` 이하
 11. temporal-backcast 55% anchor blend: `0.68880`
 12. constant-turn curvature correction: `0.69000`
+13. curvature gate: `0.69120`
 
 최신 판단:
 
@@ -118,8 +119,10 @@ def r_hit(pred, true):
 - 2026-05-16에는 hit-probability router 후보 2개가 `0.68420`으로 약했지만, temporal-backcast pseudo-supervision이 `0.68620`, `0.68780`, `0.68640`을 기록하며 새 돌파구가 됐다.
 - 2026-05-17/18에는 temporal-backcast refine으로 `w52=0.68800`, `w55=0.68880`, `avg_r1r2_w52=0.68820`, `truew555=0.68860`을 확인했다. temporal-only 최적은 55% 근처로 보인다.
 - 2026-05-18에는 constant-turn curvature correction을 새 축으로 추가했다. `a08=0.68940`, `a09=0.69000`, `a10=0.68960`으로 alpha 0.09가 현재 최고다.
+- 2026-05-19에는 curvature correction을 적용할 샘플을 고르는 gate 모델을 추가했다. `gate_t50_a105=0.69100`, `gate_t38_a105=0.69000`, `gate_t52_a105=0.69120`으로 threshold 0.50~0.52가 강했다.
+- low-confidence 샘플에 약한 correction을 남긴 `gate_t50_a105_low025`와 residual-on-gate 후보는 각각 `0.69040`으로 하락했다. 현재는 residual 보정보다 multi-curvature gate 또는 alpha bucket policy가 우선이다.
 - velocity smoothing/local frame denoising은 OOF proxy에서 크게 하락해 당분간 폐기한다.
-- 다음은 curvature alpha `0.085`, `0.090`, `0.095` 초정밀 후보와 curvature gate 모델을 우선한다. 기존 후보 중에는 `turncurve_refine_temporalbest_w1tm0p25s0p5d0p98_a07.csv`가 peak 왼쪽 확인용으로 남아 있다.
+- 다음은 `threshold=0.50~0.54`, `alpha=0.100~0.110` 주변을 보되, 단순 미세조정보다 여러 turn config를 함께 쓰는 multi-curvature gate와 alpha bucket policy를 우선한다.
 - 자동화는 사용자가 돌아온 뒤 해제 요청했으므로 현재 PAUSED 상태다.
 
 ## 일정

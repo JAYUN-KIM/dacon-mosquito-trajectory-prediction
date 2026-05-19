@@ -16,10 +16,10 @@
 ## 현재 성과
 
 <!-- AUTO:PROJECT_STATUS:START -->
-- 최고 Public LB: **0.69000**
-- 최신 최고점 확인일: **2026-05-18**
-- 핵심 개선 축: temporal-backcast pseudo-supervision + constant-turn curvature correction
-- 최신 새 축 검토: 2026-05-18 constant-turn curvature correction이 temporal best `0.68880`에서 **0.69000**으로 개선
+- 최고 Public LB: **0.69120**
+- 최신 최고점 확인일: **2026-05-19**
+- 핵심 개선 축: temporal-backcast pseudo-supervision + constant-turn curvature correction + sample-wise curvature gate
+- 최신 새 축 검토: 2026-05-19 curvature gate가 constant-turn best `0.69000`에서 **0.69120**으로 개선
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -87,6 +87,15 @@
    - constant-turn 단독 예측 대신 `(constant_turn - constant_velocity)` correction만 강한 temporal anchor에 작게 더했습니다.
    - `anchor_alpha=0.09` 후보가 Public LB `0.69000`으로 새 최고점을 만들었습니다.
 
+13. Curvature gate
+   - 모든 샘플에 같은 curvature correction을 더하지 않고, train OOF에서 correction이 이득인 샘플을 학습했습니다.
+   - gate probability가 중간 이상인 샘플에만 `alpha=0.105` correction을 적용하는 후보가 public에서 개선됐습니다.
+   - `threshold=0.52`, `alpha=0.105` 후보가 Public LB `0.69120`으로 새 최고점을 만들었습니다.
+
+14. Gate residual correction
+   - curvature gate 이후 남은 OOF residual vector를 다시 학습해 아주 작게 보정하는 실험을 진행했습니다.
+   - OOF에서는 소폭 개선됐지만 public은 `0.69040`으로 하락해, 현재는 주력 축에서 제외합니다.
+
 ## 주요 인사이트
 
 - 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
@@ -104,6 +113,9 @@
 - temporal-backcast는 단독보다 기존 selector-soft anchor와 `50%` 전후로 섞을 때 public에서 더 강했습니다.
 - 2026-05-18 기준 temporal-backcast는 `55%` 근처에서 포화됐고, 그 위에 constant-turn curvature correction을 작게 더하는 방식이 추가 돌파를 만들었습니다.
 - curvature correction은 단독 모델이 아니라 강한 anchor 위에 `0.08~0.10` 수준으로 얹을 때 가장 안정적입니다.
+- 2026-05-19 기준 curvature correction은 전 샘플 동일 적용보다 sample-wise gate가 더 강했습니다.
+- gate threshold는 너무 낮게 넓히면 하락했고, `0.50~0.52` 근처의 중간 확신 샘플만 correction하는 쪽이 public에서 가장 좋았습니다.
+- low-confidence 샘플에 약한 correction을 남기는 방식과 residual-on-gate correction은 public에서 하락했습니다.
 
 ## Public Score 흐름
 
@@ -155,6 +167,11 @@
 | `turncurve_rank1_temporalbest_w1tm0p25s0p5d0p98_a08.csv` | 0.68940 | constant-turn curvature correction 유효성 확인 |
 | `turncurve_refine_temporalbest_w1tm0p25s0p5d0p98_a09.csv` | **0.69000** | 현재 최고점, curvature correction alpha 0.09 |
 | `turncurve_refine_temporalbest_w1tm0p25s0p5d0p98_a10.csv` | 0.68960 | alpha 0.10은 0.09보다 약함 |
+| `curvgate_rank2_gatet50a105.csv` | 0.69100 | curvature correction을 gate 확신 샘플에만 적용 |
+| `curvgate_rank3_gatet38a105.csv` | 0.69000 | threshold를 너무 낮게 넓히면 기존 best 수준으로 하락 |
+| `curvgate_refine_rank2_gatet52a105.csv` | **0.69120** | 현재 최고점, gate threshold 0.52와 alpha 0.105 |
+| `curvgate_refine_rank6_gatet50a105low025.csv` | 0.69040 | low-confidence 샘플에 약한 correction을 남긴 변형은 하락 |
+| `gate_residual_exp_sh085_cap0022.csv` | 0.69040 | residual-on-gate 새 축은 OOF 대비 public 미재현 |
 
 ## 대표 실험 코드
 
@@ -187,6 +204,9 @@
 | `scripts/run_temporal_backcast_augmentation_20260516.py` | 궤적 내부 pseudo-supervision temporal-backcast 후보 생성 |
 | `scripts/make_temporal_backcast_refine_candidates_20260516.py` | temporal-backcast 50% 주변 blend/refine 후보 생성 |
 | `scripts/run_constant_turn_curvature_20260518.py` | constant-turn curvature correction 후보 생성 |
+| `scripts/run_curvature_gate_20260519.py` | curvature correction 적용 샘플을 고르는 gate 후보 생성 |
+| `scripts/make_curvature_gate_refine_candidates_20260519.py` | public 신호 기반 curvature gate threshold/alpha refine |
+| `scripts/make_gate_residual_experimental_20260519.py` | curvature gate 이후 residual-on-gate 실험 후보 생성 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -253,6 +273,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [2026-05-15 새 축 재탐색 정리](docs/experiment_summary_2026-05-15.md)
 - [2026-05-16 temporal-backcast breakthrough 정리](docs/experiment_summary_2026-05-16.md)
 - [2026-05-18 constant-turn curvature breakthrough 정리](docs/experiment_summary_2026-05-18.md)
+- [2026-05-19 curvature gate breakthrough 정리](docs/experiment_summary_2026-05-19.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
@@ -272,6 +293,9 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [temporal-backcast augmentation 리포트](reports/latest_temporal_backcast_augmentation_20260516.md)
 - [temporal-backcast refine 리포트](reports/latest_temporal_backcast_refine_20260516.md)
 - [constant-turn curvature 리포트](reports/latest_constant_turn_curvature_20260518.md)
+- [curvature gate 리포트](reports/latest_curvature_gate_20260519.md)
+- [curvature gate refine 리포트](reports/latest_curvature_gate_refine_20260519.md)
+- [gate residual experimental 리포트](reports/latest_gate_residual_experimental_20260519.md)
 
 ## 비고
 

@@ -52,3 +52,8 @@ date,submission,public_score,notes
 2026-05-18,turncurve_rank1_temporalbest_w1tm0p25s0p5d0p98_a08.csv,0.68940,constant-turn curvature correction confirmed a new physics correction axis
 2026-05-18,turncurve_refine_temporalbest_w1tm0p25s0p5d0p98_a09.csv,0.69000,0.09 curvature correction alpha produced the new public best
 2026-05-18,turncurve_refine_temporalbest_w1tm0p25s0p5d0p98_a10.csv,0.68960,larger 0.10 curvature correction trailed the 0.09 peak
+2026-05-19,curvgate_rank2_gatet50a105.csv,0.69100,sample-wise curvature gate with threshold 0.50 and alpha 0.105 improved over fixed curvature
+2026-05-19,curvgate_rank3_gatet38a105.csv,0.69000,too-broad curvature gate threshold tied the old curvature best and showed low-confidence samples are risky
+2026-05-19,curvgate_refine_rank2_gatet52a105.csv,0.69120,threshold 0.52 with alpha 0.105 became the new public best
+2026-05-19,curvgate_refine_rank6_gatet50a105low025.csv,0.69040,leaving weak correction on low-confidence samples underperformed the hard gate
+2026-05-19,gate_residual_exp_sh085_cap0022.csv,0.69040,experimental residual-on-gate correction did not reproduce its OOF gain on public
