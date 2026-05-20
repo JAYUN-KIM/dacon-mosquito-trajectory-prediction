@@ -57,3 +57,8 @@ date,submission,public_score,notes
 2026-05-19,curvgate_refine_rank2_gatet52a105.csv,0.69120,threshold 0.52 with alpha 0.105 became the new public best
 2026-05-19,curvgate_refine_rank6_gatet50a105low025.csv,0.69040,leaving weak correction on low-confidence samples underperformed the hard gate
 2026-05-19,gate_residual_exp_sh085_cap0022.csv,0.69040,experimental residual-on-gate correction did not reproduce its OOF gain on public
+2026-05-20,mirror_tta_rank1_mirrortta_temporal_w55_gate_t52_a105_bestblend35.csv,0.69020,mirror-symmetry temporal TTA failed to complement the curvature gate champion
+2026-05-20,multicurv_action_rank2_currentblend25actiontop3p2.csv,0.69020,multi-curvature action router also underperformed despite OOF action differences
+2026-05-20,mlpseq_rank2_blend08base.csv,0.69020,MLP sequence pseudo-supervision blend did not add complementary bias
+2026-05-20,curvgate_rank4_gatet54a105.csv,0.69120,threshold 0.54 with alpha 0.105 reproduced the champion score
+2026-05-20,curvgate_refine_rank8_gatet52a110.csv,0.69080,alpha 0.110 overcorrected relative to alpha 0.105

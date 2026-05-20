@@ -17,9 +17,9 @@
 
 <!-- AUTO:PROJECT_STATUS:START -->
 - 최고 Public LB: **0.69120**
-- 최신 최고점 확인일: **2026-05-19**
+- 최신 최고점 확인일: **2026-05-20**
 - 핵심 개선 축: temporal-backcast pseudo-supervision + constant-turn curvature correction + sample-wise curvature gate
-- 최신 새 축 검토: 2026-05-19 curvature gate가 constant-turn best `0.69000`에서 **0.69120**으로 개선
+- 최신 새 축 검토: 2026-05-20 mirror-TTA, multi-curvature action router, MLP sequence blend는 public `0.69020`으로 실패했고, curvature gate `t54_a105`가 **0.69120** 동률 재현
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -96,6 +96,11 @@
    - curvature gate 이후 남은 OOF residual vector를 다시 학습해 아주 작게 보정하는 실험을 진행했습니다.
    - OOF에서는 소폭 개선됐지만 public은 `0.69040`으로 하락해, 현재는 주력 축에서 제외합니다.
 
+15. 2026-05-20 새 축 재탐색
+   - mirror-symmetry temporal TTA, multi-curvature action router, MLP sequence pseudo-supervision을 실험했습니다.
+   - 세 축 모두 첫 public probe가 `0.69020`으로 하락해, current best 주변을 흐트러뜨리는 과적합성 후보로 판단했습니다.
+   - 반면 기존 curvature gate의 `threshold=0.54`, `alpha=0.105` 후보가 `0.69120` 동률을 재현해 gate 축의 안정성을 확인했습니다.
+
 ## 주요 인사이트
 
 - 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
@@ -116,6 +121,8 @@
 - 2026-05-19 기준 curvature correction은 전 샘플 동일 적용보다 sample-wise gate가 더 강했습니다.
 - gate threshold는 너무 낮게 넓히면 하락했고, `0.50~0.52` 근처의 중간 확신 샘플만 correction하는 쪽이 public에서 가장 좋았습니다.
 - low-confidence 샘플에 약한 correction을 남기는 방식과 residual-on-gate correction은 public에서 하락했습니다.
+- 2026-05-20 기준 새 축 후보가 서로 다른 방식이어도 `0.69020` 근처로 반복 하락해, OOF/아이디어 신호만 믿고 current best를 섞는 방식은 위험합니다.
+- curvature gate는 `t52_a105`와 `t54_a105`가 모두 `0.69120`으로 재현됐고, `alpha=0.110`은 `0.69080`으로 하락해 alpha 0.105 근처가 안정권입니다.
 
 ## Public Score 흐름
 
@@ -172,6 +179,11 @@
 | `curvgate_refine_rank2_gatet52a105.csv` | **0.69120** | 현재 최고점, gate threshold 0.52와 alpha 0.105 |
 | `curvgate_refine_rank6_gatet50a105low025.csv` | 0.69040 | low-confidence 샘플에 약한 correction을 남긴 변형은 하락 |
 | `gate_residual_exp_sh085_cap0022.csv` | 0.69040 | residual-on-gate 새 축은 OOF 대비 public 미재현 |
+| `mirror_tta_rank1_mirrortta_temporal_w55_gate_t52_a105_bestblend35.csv` | 0.69020 | mirror-symmetry temporal TTA 새 축은 public 미재현 |
+| `multicurv_action_rank2_currentblend25actiontop3p2.csv` | 0.69020 | multi-curvature action router도 current best를 흐트러뜨림 |
+| `mlpseq_rank2_blend08base.csv` | 0.69020 | MLP sequence pseudo-supervision blend도 public 하락 |
+| `curvgate_rank4_gatet54a105.csv` | **0.69120** | t52와 동률, threshold 0.54도 안정권임을 확인 |
+| `curvgate_refine_rank8_gatet52a110.csv` | 0.69080 | alpha 0.110은 과보정 |
 
 ## 대표 실험 코드
 
@@ -207,6 +219,9 @@
 | `scripts/run_curvature_gate_20260519.py` | curvature correction 적용 샘플을 고르는 gate 후보 생성 |
 | `scripts/make_curvature_gate_refine_candidates_20260519.py` | public 신호 기반 curvature gate threshold/alpha refine |
 | `scripts/make_gate_residual_experimental_20260519.py` | curvature gate 이후 residual-on-gate 실험 후보 생성 |
+| `scripts/run_mirror_tta_temporal_gate_20260520.py` | mirror-symmetry temporal TTA와 curvature gate blend 실험 |
+| `scripts/run_multi_curvature_action_router_20260520.py` | 여러 curvature action 후보별 hit probability router 실험 |
+| `scripts/run_mlp_sequence_pseudo_blend_20260520.py` | MLP sequence pseudo-supervision blend 실험 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -274,6 +289,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [2026-05-16 temporal-backcast breakthrough 정리](docs/experiment_summary_2026-05-16.md)
 - [2026-05-18 constant-turn curvature breakthrough 정리](docs/experiment_summary_2026-05-18.md)
 - [2026-05-19 curvature gate breakthrough 정리](docs/experiment_summary_2026-05-19.md)
+- [2026-05-20 새 축 재탐색과 gate 재현성 정리](docs/experiment_summary_2026-05-20.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
@@ -296,6 +312,9 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [curvature gate 리포트](reports/latest_curvature_gate_20260519.md)
 - [curvature gate refine 리포트](reports/latest_curvature_gate_refine_20260519.md)
 - [gate residual experimental 리포트](reports/latest_gate_residual_experimental_20260519.md)
+- [mirror-symmetry temporal TTA 리포트](reports/latest_mirror_tta_temporal_gate_20260520.md)
+- [multi-curvature action router 리포트](reports/latest_multi_curvature_action_router_20260520.md)
+- [MLP sequence pseudo blend 리포트](reports/latest_mlp_sequence_pseudo_blend_20260520.md)
 
 ## 비고
 

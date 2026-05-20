@@ -87,10 +87,11 @@ def r_hit(pred, true):
 
 - 현재 최고 Public LB: `0.69120`
 - 최고 제출 파일: `curvgate_refine_rank2_gatet52a105.csv`
-- 최신 최고점 확인일: `2026-05-19`
+- 보조 최고 제출 파일: `curvgate_rank4_gatet54a105.csv`
+- 최신 최고점 확인일: `2026-05-20`
 - 핵심 축: `temporal-backcast pseudo-supervision + constant-turn curvature correction + sample-wise curvature gate`
-- 최신 새 축 검토일: `2026-05-19`
-- 최신 판단: constant-turn correction을 모든 샘플에 동일 적용하는 것보다 gate probability가 중간 이상인 샘플에만 `alpha=0.105`를 적용하는 방식이 강했다. `threshold=0.52` 후보가 `0.69120`으로 새 최고점을 만들었고, low-confidence correction과 residual-on-gate는 `0.69040`으로 하락했다.
+- 최신 새 축 검토일: `2026-05-20`
+- 최신 판단: mirror-TTA, multi-curvature action router, MLP sequence pseudo-supervision은 모두 첫 public probe가 `0.69020`으로 하락했다. 반면 기존 curvature gate `threshold=0.54`, `alpha=0.105`가 `0.69120` 동률을 재현했다. 현재는 새 축을 바로 제출하기보다 검증 실패 원인 분석과 gate 주변 정밀 검증이 우선이다.
 
 주요 흐름:
 
@@ -121,8 +122,10 @@ def r_hit(pred, true):
 - 2026-05-18에는 constant-turn curvature correction을 새 축으로 추가했다. `a08=0.68940`, `a09=0.69000`, `a10=0.68960`으로 alpha 0.09가 현재 최고다.
 - 2026-05-19에는 curvature correction을 적용할 샘플을 고르는 gate 모델을 추가했다. `gate_t50_a105=0.69100`, `gate_t38_a105=0.69000`, `gate_t52_a105=0.69120`으로 threshold 0.50~0.52가 강했다.
 - low-confidence 샘플에 약한 correction을 남긴 `gate_t50_a105_low025`와 residual-on-gate 후보는 각각 `0.69040`으로 하락했다. 현재는 residual 보정보다 multi-curvature gate 또는 alpha bucket policy가 우선이다.
+- 2026-05-20에는 mirror-symmetry temporal TTA, multi-curvature action router, MLP sequence pseudo-supervision을 새 축으로 시도했지만 모두 `0.69020`으로 하락했다. 서로 다른 축이 같은 수준으로 하락해 current best를 조금만 흐트러뜨려도 hit가 깨지는 구간으로 판단한다.
+- 같은 날 검증된 curvature gate 주변으로 돌아와 `curvgate_rank4_gatet54a105.csv=0.69120`을 확인했다. `curvgate_refine_rank8_gatet52a110.csv=0.69080`으로 alpha 0.110은 과보정이다.
 - velocity smoothing/local frame denoising은 OOF proxy에서 크게 하락해 당분간 폐기한다.
-- 다음은 `threshold=0.50~0.54`, `alpha=0.100~0.110` 주변을 보되, 단순 미세조정보다 여러 turn config를 함께 쓰는 multi-curvature gate와 alpha bucket policy를 우선한다.
+- 다음은 새 제출 파일을 바로 만들기보다, public 성공/실패 후보의 current best 대비 이동 벡터 분포를 비교해 실패 패턴을 자동 필터링하는 진단을 우선한다. 제출은 `threshold=0.52~0.54`, `alpha=0.102~0.106` 근처만 매우 조심스럽게 확인한다.
 - 자동화는 사용자가 돌아온 뒤 해제 요청했으므로 현재 PAUSED 상태다.
 
 ## 일정
