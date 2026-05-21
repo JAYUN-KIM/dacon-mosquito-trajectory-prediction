@@ -62,3 +62,8 @@ date,submission,public_score,notes
 2026-05-20,mlpseq_rank2_blend08base.csv,0.69020,MLP sequence pseudo-supervision blend did not add complementary bias
 2026-05-20,curvgate_rank4_gatet54a105.csv,0.69120,threshold 0.54 with alpha 0.105 reproduced the champion score
 2026-05-20,curvgate_refine_rank8_gatet52a110.csv,0.69080,alpha 0.110 overcorrected relative to alpha 0.105
+2026-05-21,manifoldproj_rank2_k256_b060_cap0003.csv,0.68980,local target manifold projection looked positive in OOF but overfit public and should be demoted
+2026-05-21,hitrescue_rank1_temporal55_top075.csv,0.69060,hard-swap rescue specialist was safer than manifold projection but still below the curvature-gate champion
+2026-05-21,cochamp_blend_t52_t54_w50.csv,0.69120,50-50 blend of the two curvature-gate co-champions preserved the best score
+2026-05-21,cochamp_blend_t52_t54_w65.csv,0.69120,t52-heavy co-champion blend also preserved the best score
+2026-05-21,cochamp_blend_t52_t54_w35.csv,0.69120,t54-heavy co-champion blend also preserved the best score
