@@ -87,6 +87,8 @@ id, x, y, z
   - `cochamp_blend_t52_t54_w65.csv = 0.69120`
   - `cochamp_blend_t52_t54_w35.csv = 0.69120`
 - 핵심 축: temporal-backcast pseudo-supervision + constant-turn curvature correction + sample-wise curvature gate
+- 최신 판단일: `2026-05-23`
+- 최신 판단: temporal curriculum 확장, exp-weighted smoothing, jerk/snap rebound 물리축은 모두 실패했다. 다음은 새 후보를 바로 제출하지 말고 champion miss regime 분석부터 해야 한다.
 
 ## 주요 점수 흐름
 
@@ -132,6 +134,15 @@ id, x, y, z
 - `cochamp_blend_t52_t54_w35.csv = 0.69120`
 - 결론: local target manifold projection과 hit-rescue hard swap은 실패. co-champion blend는 안정적이지만 돌파력은 없음. 내일은 post-process가 아니라 새 pseudo-label/supervision 축으로 0.7을 노려야 함.
 
+### 2026-05-23
+
+- `tempcurr_rank1_tcc5678w012v6789w006champblend15f102s100u100.csv = 0.69060`
+- `tempcurr_rank4_tcc678w022v89w004champblend15f102s100u100.csv = 0.69060`
+- `tempcurr_rank5_tcc5678w012v6789w006cochampblend20f102s100u100.csv = 0.69060`
+- `fastnew_rank2_snapsnapv102a035jm0p2d096blend18.csv = 0.68660`
+- `fastnew_rank1_smoothewpolyw11d2r55blend18.csv = 0.67160`
+- 결론: temporal curriculum 확장도, smoothing/denoising도, jerk/snap 물리축도 모두 아니다. 2026-05-24에는 새 좌표 후보를 바로 섞지 말고 champion miss 샘플을 regime별로 분해하는 연구부터 시작한다.
+
 ## 핵심 인사이트
 
 - 평균 거리보다 `1cm hit 경계` 샘플을 직접 겨냥해야 점수가 오른다.
@@ -141,7 +152,7 @@ id, x, y, z
 - constant-turn curvature correction은 단독 모델이 아니라 강한 anchor 위에 작게 얹을 때만 유효하다.
 - curvature gate는 `threshold=0.52~0.54`, `alpha=0.105` 부근이 안정권이다.
 - current best 주변 post-process는 OOF가 좋아 보여도 public에서 과적합이 반복된다.
-- 0.7을 보려면 기존 champion을 조금 만지는 방식이 아니라 학습 데이터/타깃 정의를 다시 크게 바꿔야 한다.
+- temporal curriculum 확장과 smoothing/snap 물리축도 실패했으므로, 0.7을 보려면 기존 champion을 조금 만지는 방식이 아니라 miss regime을 먼저 정확히 분리해야 한다.
 
 ## 내일 연구 방향
 
@@ -149,11 +160,11 @@ id, x, y, z
 
 우선순위:
 
-1. post-process 후보는 중단한다.
-2. train 내부 oracle 분석으로 champion miss를 실제로 살릴 수 있는 후보군을 찾는다.
-3. temporal-backcast를 확장해 다양한 cutoff, horizon, regime별 pseudo-label curriculum을 만든다.
-4. 전체 sequence를 쓰는 새 supervision 모델을 만들되, public 제출 전 OOF oracle hit potential을 먼저 본다.
-5. 후보를 만들 때 current best 대비 이동량보다 "추가 hit 가능성"과 "기존 hit 파괴 위험"을 같이 기록한다.
+1. post-process, smoothing, snap, 단순 temporal curriculum 확장은 중단한다.
+2. train OOF champion miss 샘플을 속도/회전/가속도/높이 변화 regime으로 나눈다.
+3. 각 regime에서 champion이 깨지는 공통 조건과 기존 후보가 살릴 수 있는 조건을 분리한다.
+4. 새 모델은 좌표를 바로 섞기보다 `어떤 샘플만 바꿀지`를 고르는 selector/calibration부터 만든다.
+5. 후보를 만들 때 current best 대비 이동량보다 "추가 hit 가능성"과 "기존 hit 파괴 위험"을 먼저 기록한다.
 
 ## 대표 파일
 
@@ -161,12 +172,16 @@ id, x, y, z
 |---|---|
 | `README.md` | 전체 프로젝트 현황과 score 흐름 |
 | `experiments/public_scores.csv` | public 제출 점수 기록 |
-| `docs/experiment_summary_2026-05-21.md` | 최신 일별 정리 |
+| `docs/experiment_summary_2026-05-23.md` | 최신 일별 정리 |
 | `reports/latest_local_target_manifold_projection_20260521.md` | manifold projection 실패 리포트 |
 | `reports/latest_hit_rescue_specialist_20260521.md` | hit-rescue specialist 실패 리포트 |
+| `reports/latest_temporal_curriculum_fast_20260522.md` | temporal curriculum 실패 리포트 |
+| `reports/latest_fast_two_new_axes_20260523.md` | smoothing/snap 물리축 실패 리포트 |
 | `scripts/run_curvature_gate_20260519.py` | 현재 champion 계열 생성 스크립트 |
 | `scripts/run_local_target_manifold_projection_20260521.py` | manifold projection 실험 |
 | `scripts/run_hit_rescue_specialist_20260521.py` | hard-swap rescue 실험 |
+| `scripts/run_temporal_curriculum_fast_20260522.py` | temporal curriculum 확장 실험 |
+| `scripts/run_fast_two_new_axes_20260523.py` | smoothing/snap 새 물리축 실험 |
 | `scripts/validate_submission.py` | 제출 파일 검증 |
 
 ## 재현/검증 예시

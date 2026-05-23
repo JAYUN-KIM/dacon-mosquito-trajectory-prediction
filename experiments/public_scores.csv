@@ -67,3 +67,8 @@ date,submission,public_score,notes
 2026-05-21,cochamp_blend_t52_t54_w50.csv,0.69120,50-50 blend of the two curvature-gate co-champions preserved the best score
 2026-05-21,cochamp_blend_t52_t54_w65.csv,0.69120,t52-heavy co-champion blend also preserved the best score
 2026-05-21,cochamp_blend_t52_t54_w35.csv,0.69120,t54-heavy co-champion blend also preserved the best score
+2026-05-23,tempcurr_rank1_tcc5678w012v6789w006champblend15f102s100u100.csv,0.69060,fast temporal curriculum expansion underperformed the curvature-gate champion
+2026-05-23,tempcurr_rank4_tcc678w022v89w004champblend15f102s100u100.csv,0.69060,more conservative temporal curriculum variant also underperformed
+2026-05-23,tempcurr_rank5_tcc5678w012v6789w006cochampblend20f102s100u100.csv,0.69060,co-champion temporal curriculum blend still underperformed
+2026-05-23,fastnew_rank2_snapsnapv102a035jm0p2d096blend18.csv,0.68660,jerk/snap rebound physics was a clearly weak new axis
+2026-05-23,fastnew_rank1_smoothewpolyw11d2r55blend18.csv,0.67160,exp-weighted polynomial smoothing was strongly harmful and should be abandoned

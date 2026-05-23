@@ -19,7 +19,7 @@
 - 최고 Public LB: **0.69120**
 - 최신 최고점 확인일: **2026-05-21**
 - 핵심 개선 축: temporal-backcast pseudo-supervision + constant-turn curvature correction + sample-wise curvature gate
-- 최신 새 축 검토: 2026-05-21 manifold projection은 `0.68980`, hit-rescue specialist는 `0.69060`으로 실패했고, t52/t54 co-champion blend 3종은 모두 **0.69120** 동률 유지
+- 최신 새 축 검토: 2026-05-23 temporal curriculum 확장은 `0.69060`, snap rebound 물리축은 `0.68660`, exp-weighted smoothing은 `0.67160`으로 실패
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -107,6 +107,12 @@
    - `t52_a105`와 `t54_a105` co-champion blend는 `w50`, `w65`, `w35` 모두 `0.69120`을 유지해 안정권을 재확인했습니다.
    - 다음 돌파는 current best 후처리가 아니라 temporal-backcast급의 새 pseudo-label/supervision 축에서 찾아야 합니다.
 
+17. 2026-05-23 공격적 새 축 재탐색
+   - temporal-backcast를 더 넓은 cutoff와 horizon1 velocity pseudo-label로 확장했지만 제출 후보 3개가 모두 `0.69060`으로 하락했습니다.
+   - exp-weighted polynomial smoothing은 `0.67160`으로 크게 무너져 smoothing/denoising 계열을 폐기했습니다.
+   - jerk/snap rebound 물리축은 `0.68660`으로 smoothing보다 낫지만 champion과 거리가 컸습니다.
+   - 다음은 새 좌표 후보를 바로 섞는 것이 아니라 champion miss regime을 먼저 분해하는 검증/selector 설계가 필요합니다.
+
 ## 주요 인사이트
 
 - 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
@@ -132,6 +138,9 @@
 - 2026-05-21 기준 manifold projection과 hit-rescue hard swap 모두 public에서 하락해, champion 위 post-process 보정만으로는 0.7 돌파가 어렵다고 판단합니다.
 - co-champion blend 3종이 모두 `0.69120`으로 동률을 유지해 안정성은 확인했지만, 점수 상한을 뚫지는 못했습니다.
 - 다음 연구는 제출 파일을 바로 만드는 것보다 train 내부 oracle hit potential로 새 pseudo-label 후보군의 추가 hit 가능성을 먼저 확인해야 합니다.
+- 2026-05-23 기준 temporal curriculum 확장, smoothing, snap 물리축도 모두 실패해 단순한 새 물리식/새 pseudo-label 추가는 막혔다고 봅니다.
+- smoothing 계열은 특히 위험했습니다. 최근 관측의 노이즈 제거보다 순간 turn/acceleration 보존이 더 중요한 문제로 보입니다.
+- 다음 연구는 `0.6912` 후보를 더 흔들지 말고, champion miss 샘플을 regime별로 분해해 “언제만 바꿀지”를 먼저 찾아야 합니다.
 
 ## Public Score 흐름
 
@@ -198,6 +207,11 @@
 | `cochamp_blend_t52_t54_w50.csv` | **0.69120** | t52/t54 co-champion 50:50 blend 동률 |
 | `cochamp_blend_t52_t54_w65.csv` | **0.69120** | t52-heavy co-champion blend 동률 |
 | `cochamp_blend_t52_t54_w35.csv` | **0.69120** | t54-heavy co-champion blend 동률 |
+| `tempcurr_rank1_tcc5678w012v6789w006champblend15f102s100u100.csv` | 0.69060 | temporal curriculum 확장 후보도 champion 대비 하락 |
+| `tempcurr_rank4_tcc678w022v89w004champblend15f102s100u100.csv` | 0.69060 | 보수적 temporal curriculum 후보도 하락 |
+| `tempcurr_rank5_tcc5678w012v6789w006cochampblend20f102s100u100.csv` | 0.69060 | co-champion 기반 temporal curriculum도 하락 |
+| `fastnew_rank2_snapsnapv102a035jm0p2d096blend18.csv` | 0.68660 | jerk/snap rebound 물리축은 약함 |
+| `fastnew_rank1_smoothewpolyw11d2r55blend18.csv` | 0.67160 | exp-weighted polynomial smoothing은 강한 하락 |
 
 ## 대표 실험 코드
 
@@ -238,6 +252,9 @@
 | `scripts/run_mlp_sequence_pseudo_blend_20260520.py` | MLP sequence pseudo-supervision blend 실험 |
 | `scripts/run_local_target_manifold_projection_20260521.py` | champion local displacement를 train target-local manifold로 약하게 투영 |
 | `scripts/run_hit_rescue_specialist_20260521.py` | champion miss 가능 샘플만 hard swap하는 rescue specialist |
+| `scripts/run_temporal_curriculum_fast_20260522.py` | temporal-backcast cutoff/velocity pseudo-label 확장 후보 생성 |
+| `scripts/run_aggressive_new_axes_20260523.py` | smoothing/action distillation 공격 축 진단 |
+| `scripts/run_fast_two_new_axes_20260523.py` | exp-weighted smoothing과 jerk/snap rebound 물리축 후보 생성 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -307,6 +324,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [2026-05-19 curvature gate breakthrough 정리](docs/experiment_summary_2026-05-19.md)
 - [2026-05-20 새 축 재탐색과 gate 재현성 정리](docs/experiment_summary_2026-05-20.md)
 - [2026-05-21 post-process 새 축 손절과 co-champion 안정성 확인](docs/experiment_summary_2026-05-21.md)
+- [2026-05-23 temporal curriculum과 공격적 물리 새 축 실패 정리](docs/experiment_summary_2026-05-23.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
@@ -334,6 +352,9 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [MLP sequence pseudo blend 리포트](reports/latest_mlp_sequence_pseudo_blend_20260520.md)
 - [local target manifold projection 리포트](reports/latest_local_target_manifold_projection_20260521.md)
 - [hit-rescue specialist 리포트](reports/latest_hit_rescue_specialist_20260521.md)
+- [fast temporal curriculum 리포트](reports/latest_temporal_curriculum_fast_20260522.md)
+- [aggressive new axes 리포트](reports/latest_aggressive_new_axes_20260523.md)
+- [fast two new axes 리포트](reports/latest_fast_two_new_axes_20260523.md)
 
 ## 비고
 
