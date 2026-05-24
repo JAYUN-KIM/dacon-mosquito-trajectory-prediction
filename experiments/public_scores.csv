@@ -72,3 +72,8 @@ date,submission,public_score,notes
 2026-05-23,tempcurr_rank5_tcc5678w012v6789w006cochampblend20f102s100u100.csv,0.69060,co-champion temporal curriculum blend still underperformed
 2026-05-23,fastnew_rank2_snapsnapv102a035jm0p2d096blend18.csv,0.68660,jerk/snap rebound physics was a clearly weak new axis
 2026-05-23,fastnew_rank1_smoothewpolyw11d2r55blend18.csv,0.67160,exp-weighted polynomial smoothing was strongly harmful and should be abandoned
+2026-05-24,regimemiss_rank1_c64_min55_net0003_p165.csv,0.69060,regime miss policy failed to beat the curvature-gate champion on public
+2026-05-24,analogknn_rank1_k64_p10_s012_cap00025_r100.csv,0.68860,analog KNN residual transfer was too disruptive around the champion
+2026-05-24,champmicro_rank1_gatet520a1075.csv,0.69100,raising t52 gate alpha to 0.1075 overcorrected
+2026-05-24,champmicro_rank3_gatet520a1025.csv,0.69140,lowering t52 gate alpha to 0.1025 produced a new public best
+2026-05-24,champalpha_rank1_t52a1015.csv,0.69140,tight alpha-down follow-up around the new best tied 0.69140

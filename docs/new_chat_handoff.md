@@ -78,17 +78,19 @@ id, x, y, z
 
 ## 현재 최고 성과
 
-- 최고 Public LB: `0.69120`
-- 최신 최고점 확인일: `2026-05-21`
-- Champion: `curvgate_refine_rank2_gatet52a105.csv`
+- 최고 Public LB: `0.69140`
+- 최신 최고점 확인일: `2026-05-24`
+- Champion: `champmicro_rank3_gatet520a1025.csv`
+- Follow-up 동률: `champalpha_rank1_t52a1015.csv = 0.69140`
+- 이전 안정 champion: `curvgate_refine_rank2_gatet52a105.csv = 0.69120`
 - Backup champion: `curvgate_rank4_gatet54a105.csv`
 - 안정 동률 blend:
   - `cochamp_blend_t52_t54_w50.csv = 0.69120`
   - `cochamp_blend_t52_t54_w65.csv = 0.69120`
   - `cochamp_blend_t52_t54_w35.csv = 0.69120`
 - 핵심 축: temporal-backcast pseudo-supervision + constant-turn curvature correction + sample-wise curvature gate
-- 최신 판단일: `2026-05-23`
-- 최신 판단: temporal curriculum 확장, exp-weighted smoothing, jerk/snap rebound 물리축은 모두 실패했다. 다음은 새 후보를 바로 제출하지 말고 champion miss regime 분석부터 해야 한다.
+- 최신 판단일: `2026-05-24`
+- 최신 판단: regime miss policy와 analog KNN residual도 public에서 하락했다. 단기적으로는 `t52` curvature gate를 유지하고 alpha를 `0.101~0.103` 사이에서 촘촘히 보정하는 축이 가장 현실적이다.
 
 ## 주요 점수 흐름
 
@@ -105,6 +107,7 @@ id, x, y, z
 | temporal-backcast refine | 0.68880 | temporal blend 55% 근처 |
 | constant-turn curvature correction | 0.69000 | 최근 회전량 기반 nonlinear physics correction |
 | curvature gate | 0.69120 | correction 적용 샘플을 gate로 선택 |
+| champion alpha calibration | 0.69140 | t52 gate 유지, alpha를 0.1025 근처로 낮춤 |
 
 ## 최근 실험 기록
 
@@ -143,6 +146,15 @@ id, x, y, z
 - `fastnew_rank1_smoothewpolyw11d2r55blend18.csv = 0.67160`
 - 결론: temporal curriculum 확장도, smoothing/denoising도, jerk/snap 물리축도 모두 아니다. 2026-05-24에는 새 좌표 후보를 바로 섞지 말고 champion miss 샘플을 regime별로 분해하는 연구부터 시작한다.
 
+### 2026-05-24
+
+- `regimemiss_rank1_c64_min55_net0003_p165.csv = 0.69060`
+- `analogknn_rank1_k64_p10_s012_cap00025_r100.csv = 0.68860`
+- `champmicro_rank1_gatet520a1075.csv = 0.69100`
+- `champmicro_rank3_gatet520a1025.csv = 0.69140`
+- `champalpha_rank1_t52a1015.csv = 0.69140`
+- 결론: 새 miss-policy/KNN residual 축은 현재 champion을 못 이겼다. 반면 `t52` gate의 alpha를 `0.105`에서 낮추는 방향이 public에서 작지만 재현된 개선을 만들었다.
+
 ## 핵심 인사이트
 
 - 평균 거리보다 `1cm hit 경계` 샘플을 직접 겨냥해야 점수가 오른다.
@@ -152,19 +164,21 @@ id, x, y, z
 - constant-turn curvature correction은 단독 모델이 아니라 강한 anchor 위에 작게 얹을 때만 유효하다.
 - curvature gate는 `threshold=0.52~0.54`, `alpha=0.105` 부근이 안정권이다.
 - current best 주변 post-process는 OOF가 좋아 보여도 public에서 과적합이 반복된다.
-- temporal curriculum 확장과 smoothing/snap 물리축도 실패했으므로, 0.7을 보려면 기존 champion을 조금 만지는 방식이 아니라 miss regime을 먼저 정확히 분리해야 한다.
+- temporal curriculum 확장과 smoothing/snap 물리축도 실패했다.
+- 2026-05-24에는 miss regime selector도 public에서 하락했으나, `t52` gate alpha-down은 `0.69140`을 만들었다.
+- 단기적으로는 새 좌표축보다 `t52` alpha calibration을 먼저 촘촘히 끝내고, 그 다음 다시 큰 축으로 돌아가는 편이 낫다.
 
 ## 내일 연구 방향
 
-목표는 `0.6912` 주변 미세조정이 아니라 `0.7` 근처를 노릴 수 있는 큰 축 발견이다.
+목표는 새 최고점 `0.69140`을 anchor로 두고 alpha calibration을 짧게 마무리한 뒤, 다시 0.7 근처를 노릴 수 있는 큰 축을 찾는 것이다.
 
 우선순위:
 
-1. post-process, smoothing, snap, 단순 temporal curriculum 확장은 중단한다.
-2. train OOF champion miss 샘플을 속도/회전/가속도/높이 변화 regime으로 나눈다.
-3. 각 regime에서 champion이 깨지는 공통 조건과 기존 후보가 살릴 수 있는 조건을 분리한다.
-4. 새 모델은 좌표를 바로 섞기보다 `어떤 샘플만 바꿀지`를 고르는 selector/calibration부터 만든다.
-5. 후보를 만들 때 current best 대비 이동량보다 "추가 hit 가능성"과 "기존 hit 파괴 위험"을 먼저 기록한다.
+1. `t52` gate alpha를 `0.1000~0.1035` 근처에서 더 촘촘히 확인한다.
+2. alpha-up 방향은 `0.1075 = 0.69100`으로 하락했으므로 당분간 제외한다.
+3. threshold 변경보다 alpha 변경이 더 강한 신호를 냈으므로 `threshold=0.52`를 우선 고정한다.
+4. post-process, smoothing, snap, KNN residual, 단순 miss regime hard-swap은 보류한다.
+5. alpha band가 막히면 다시 큰 축으로 돌아가되, 후보를 제출하기 전 기존 hit 파괴 위험을 먼저 기록한다.
 
 ## 대표 파일
 
@@ -172,7 +186,7 @@ id, x, y, z
 |---|---|
 | `README.md` | 전체 프로젝트 현황과 score 흐름 |
 | `experiments/public_scores.csv` | public 제출 점수 기록 |
-| `docs/experiment_summary_2026-05-23.md` | 최신 일별 정리 |
+| `docs/experiment_summary_2026-05-24.md` | 최신 일별 정리 |
 | `reports/latest_local_target_manifold_projection_20260521.md` | manifold projection 실패 리포트 |
 | `reports/latest_hit_rescue_specialist_20260521.md` | hit-rescue specialist 실패 리포트 |
 | `reports/latest_temporal_curriculum_fast_20260522.md` | temporal curriculum 실패 리포트 |
@@ -182,6 +196,10 @@ id, x, y, z
 | `scripts/run_hit_rescue_specialist_20260521.py` | hard-swap rescue 실험 |
 | `scripts/run_temporal_curriculum_fast_20260522.py` | temporal curriculum 확장 실험 |
 | `scripts/run_fast_two_new_axes_20260523.py` | smoothing/snap 새 물리축 실험 |
+| `scripts/run_regime_miss_policy_20260524.py` | champion miss regime policy 실험 |
+| `scripts/run_analog_knn_residual_20260524.py` | 유사 궤적 KNN residual 전이 실험 |
+| `scripts/make_champion_micro_tuning_20260524.py` | t52/t54 champion 주변 미세조정 |
+| `scripts/make_champion_alpha_refine_20260524.py` | public feedback 기반 t52 alpha band 후보 생성 |
 | `scripts/validate_submission.py` | 제출 파일 검증 |
 
 ## 재현/검증 예시
