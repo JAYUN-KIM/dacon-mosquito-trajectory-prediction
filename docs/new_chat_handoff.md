@@ -79,7 +79,7 @@ id, x, y, z
 ## 현재 최고 성과
 
 - 최고 Public LB: `0.69140`
-- 최신 최고점 확인일: `2026-05-24`
+- 최신 최고점 확인일: `2026-05-25`
 - Champion: `champmicro_rank3_gatet520a1025.csv`
 - Follow-up 동률: `champalpha_rank1_t52a1015.csv = 0.69140`
 - 이전 안정 champion: `curvgate_refine_rank2_gatet52a105.csv = 0.69120`
@@ -89,8 +89,8 @@ id, x, y, z
   - `cochamp_blend_t52_t54_w65.csv = 0.69120`
   - `cochamp_blend_t52_t54_w35.csv = 0.69120`
 - 핵심 축: temporal-backcast pseudo-supervision + constant-turn curvature correction + sample-wise curvature gate
-- 최신 판단일: `2026-05-24`
-- 최신 판단: regime miss policy와 analog KNN residual도 public에서 하락했다. 단기적으로는 `t52` curvature gate를 유지하고 alpha를 `0.101~0.103` 사이에서 촘촘히 보정하는 축이 가장 현실적이다.
+- 최신 판단일: `2026-05-25`
+- 최신 판단: local hit-mode retrieval은 `0.68980`으로 실패했고, `t52` alpha-down/plateau disagreement 후보는 모두 `0.69140` 동률에 묶였다. 미세조정은 포화로 보고 다음은 큰 새 축을 찾아야 한다.
 
 ## 주요 점수 흐름
 
@@ -155,6 +155,15 @@ id, x, y, z
 - `champalpha_rank1_t52a1015.csv = 0.69140`
 - 결론: 새 miss-policy/KNN residual 축은 현재 champion을 못 이겼다. 반면 `t52` gate의 alpha를 `0.105`에서 낮추는 방향이 public에서 작지만 재현된 개선을 만들었다.
 
+### 2026-05-25
+
+- `hitmode_rank1_localshape_k32_s0008_clustermean_r30_b18_c00008.csv = 0.68980`
+- `champalpha2_rank1_t52a1010.csv = 0.69140`
+- `champalpha2_rank5_t52a1005.csv = 0.69140`
+- `plateaudis_rank2_stablemeanplateau.csv = 0.69140`
+- `plateaudis_rank4_towarda1005top15b50.csv = 0.69140`
+- 결론: hit-mode retrieval 새 축은 하락했고, alpha/plateau disagreement 계열은 모두 `0.69140`에서 포화됐다. 이 구간을 더 파는 것은 제출권 낭비 가능성이 높다.
+
 ## 핵심 인사이트
 
 - 평균 거리보다 `1cm hit 경계` 샘플을 직접 겨냥해야 점수가 오른다.
@@ -166,19 +175,20 @@ id, x, y, z
 - current best 주변 post-process는 OOF가 좋아 보여도 public에서 과적합이 반복된다.
 - temporal curriculum 확장과 smoothing/snap 물리축도 실패했다.
 - 2026-05-24에는 miss regime selector도 public에서 하락했으나, `t52` gate alpha-down은 `0.69140`을 만들었다.
-- 단기적으로는 새 좌표축보다 `t52` alpha calibration을 먼저 촘촘히 끝내고, 그 다음 다시 큰 축으로 돌아가는 편이 낫다.
+- 2026-05-25에는 alpha-down과 plateau disagreement가 모두 `0.69140`에 묶여 미세조정 포화가 확인됐다.
+- 다음은 alpha/gate 미세조정이 아니라 새로운 supervision, target formulation, 또는 test-time invariant 설계 같은 큰 축으로 돌아가야 한다.
 
 ## 내일 연구 방향
 
-목표는 새 최고점 `0.69140`을 anchor로 두고 alpha calibration을 짧게 마무리한 뒤, 다시 0.7 근처를 노릴 수 있는 큰 축을 찾는 것이다.
+목표는 새 최고점 `0.69140`을 anchor로 유지하되, alpha/gate 미세조정은 멈추고 0.7 근처를 노릴 수 있는 큰 축을 다시 찾는 것이다.
 
 우선순위:
 
-1. `t52` gate alpha를 `0.1000~0.1035` 근처에서 더 촘촘히 확인한다.
-2. alpha-up 방향은 `0.1075 = 0.69100`으로 하락했으므로 당분간 제외한다.
-3. threshold 변경보다 alpha 변경이 더 강한 신호를 냈으므로 `threshold=0.52`를 우선 고정한다.
-4. post-process, smoothing, snap, KNN residual, 단순 miss regime hard-swap은 보류한다.
-5. alpha band가 막히면 다시 큰 축으로 돌아가되, 후보를 제출하기 전 기존 hit 파괴 위험을 먼저 기록한다.
+1. `t52` alpha/gate 미세조정은 중단한다.
+2. hit-mode retrieval, KNN residual, smoothing, snap, 단순 miss hard-swap은 보류한다.
+3. 다음 후보는 champion을 흔드는 후처리보다 새로운 supervision/target formulation을 우선한다.
+4. 그래도 제출 후보를 만들 때는 `0.69140` anchor 대비 기존 hit 파괴 위험과 이동량을 먼저 기록한다.
+5. public에서 새 축이 `0.6914`를 못 넘으면 빠르게 손절하고 다음 축으로 넘어간다.
 
 ## 대표 파일
 
@@ -186,7 +196,7 @@ id, x, y, z
 |---|---|
 | `README.md` | 전체 프로젝트 현황과 score 흐름 |
 | `experiments/public_scores.csv` | public 제출 점수 기록 |
-| `docs/experiment_summary_2026-05-24.md` | 최신 일별 정리 |
+| `docs/experiment_summary_2026-05-25.md` | 최신 일별 정리 |
 | `reports/latest_local_target_manifold_projection_20260521.md` | manifold projection 실패 리포트 |
 | `reports/latest_hit_rescue_specialist_20260521.md` | hit-rescue specialist 실패 리포트 |
 | `reports/latest_temporal_curriculum_fast_20260522.md` | temporal curriculum 실패 리포트 |
@@ -200,6 +210,9 @@ id, x, y, z
 | `scripts/run_analog_knn_residual_20260524.py` | 유사 궤적 KNN residual 전이 실험 |
 | `scripts/make_champion_micro_tuning_20260524.py` | t52/t54 champion 주변 미세조정 |
 | `scripts/make_champion_alpha_refine_20260524.py` | public feedback 기반 t52 alpha band 후보 생성 |
+| `scripts/run_local_hit_mode_retrieval_20260525.py` | hit-mode retrieval 새 축 실험 |
+| `scripts/make_champion_alpha_ultrafine_20260525.py` | t52 alpha-down plateau 초미세 확인 |
+| `scripts/make_plateau_disagreement_candidates_20260525.py` | plateau 후보 disagreement 저위험 실험 |
 | `scripts/validate_submission.py` | 제출 파일 검증 |
 
 ## 재현/검증 예시

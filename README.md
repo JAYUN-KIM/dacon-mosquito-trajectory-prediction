@@ -17,10 +17,10 @@
 
 <!-- AUTO:PROJECT_STATUS:START -->
 - 최고 Public LB: **0.69140**
-- 최신 최고점 확인일: **2026-05-24**
+- 최신 최고점 확인일: **2026-05-25**
 - 핵심 개선 축: temporal-backcast pseudo-supervision + constant-turn curvature correction + sample-wise curvature gate
-- 최신 새 축 검토: 2026-05-24 regime miss policy는 `0.69060`, analog KNN residual은 `0.68860`으로 실패
-- 최신 개선: `t52` curvature gate를 유지하고 correction alpha를 `0.105`에서 `0.1025` 근처로 낮추며 `0.69140`까지 갱신
+- 최신 새 축 검토: 2026-05-25 local hit-mode retrieval은 `0.68980`으로 실패
+- 최신 판단: `t52` alpha-down 및 plateau disagreement 후보가 모두 `0.69140`에 묶여 alpha/plateau 미세조정은 포화
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -120,6 +120,12 @@
    - 반대로 `alpha=0.1025`는 `0.69140`으로 상승해 현재 최고점을 갱신했습니다.
    - 후속 alpha band probe도 `0.69140` 동률을 기록해, 현재는 새 좌표축보다 `t52` gate의 alpha calibration이 가장 믿을 만합니다.
 
+19. 2026-05-25 plateau 포화 확인
+   - 대회 정의를 다시 보고 평균 KNN이 아니라 local target mode를 찾는 hit-mode retrieval 축을 만들었지만, public은 `0.68980`으로 하락했습니다.
+   - `t52` alpha를 `0.1005`, `0.1010`, `0.1015`, `0.1025`로 바꾼 후보들이 모두 `0.69140`을 기록해 alpha-down plateau가 확인됐습니다.
+   - public-stable plateau 후보들의 disagreement만 이용한 초저위험 평균/부분 이동 후보도 `0.69140`에 묶였습니다.
+   - 결론적으로 5/25 기준 미세조정으로는 상한을 못 뚫고 있으며, 다음 연구는 다시 큰 새 축을 찾아야 합니다.
+
 ## 주요 인사이트
 
 - 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
@@ -147,7 +153,7 @@
 - 다음 연구는 제출 파일을 바로 만드는 것보다 train 내부 oracle hit potential로 새 pseudo-label 후보군의 추가 hit 가능성을 먼저 확인해야 합니다.
 - 2026-05-23 기준 temporal curriculum 확장, smoothing, snap 물리축도 모두 실패해 단순한 새 물리식/새 pseudo-label 추가는 막혔다고 봅니다.
 - smoothing 계열은 특히 위험했습니다. 최근 관측의 노이즈 제거보다 순간 turn/acceleration 보존이 더 중요한 문제로 보입니다.
-- 2026-05-24 기준 regime miss/KNN residual도 public에서 하락했으므로, 단기적으로는 `t52` gate의 alpha를 `0.101~0.103` 근처에서 더 촘촘히 보정하는 것이 가장 현실적입니다.
+- 2026-05-25 기준 `t52` alpha-down과 plateau disagreement까지 모두 `0.69140`에 포화됐으므로, 미세조정은 멈추고 다시 큰 새 축을 찾아야 합니다.
 
 ## Public Score 흐름
 
@@ -224,6 +230,11 @@
 | `champmicro_rank1_gatet520a1075.csv` | 0.69100 | t52 gate alpha를 키우면 과보정 |
 | `champmicro_rank3_gatet520a1025.csv` | **0.69140** | t52 gate alpha를 낮추며 새 최고점 갱신 |
 | `champalpha_rank1_t52a1015.csv` | **0.69140** | alpha-down 주변 후속 probe도 최고점 동률 |
+| `hitmode_rank1_localshape_k32_s0008_clustermean_r30_b18_c00008.csv` | 0.68980 | local hit-mode retrieval 새 축은 public 하락 |
+| `champalpha2_rank1_t52a1010.csv` | **0.69140** | alpha-down 초미세 probe도 최고점 동률 |
+| `champalpha2_rank5_t52a1005.csv` | **0.69140** | 더 낮은 alpha도 최고점 동률로 plateau 확인 |
+| `plateaudis_rank2_stablemeanplateau.csv` | **0.69140** | plateau 후보 평균도 상한 돌파 실패 |
+| `plateaudis_rank4_towarda1005top15b50.csv` | **0.69140** | plateau disagreement 부분 이동도 동률 |
 
 ## 대표 실험 코드
 
@@ -272,6 +283,9 @@
 | `scripts/run_consensus_hit_mode_20260524.py` | 후보 좌표 cloud의 weighted consensus mode 실험 |
 | `scripts/make_champion_micro_tuning_20260524.py` | t52/t54 champion 주변 threshold/alpha 미세조정 |
 | `scripts/make_champion_alpha_refine_20260524.py` | public feedback 기반 t52 alpha band 후보 생성 |
+| `scripts/run_local_hit_mode_retrieval_20260525.py` | 평균 KNN 대신 local target mode를 찾는 retrieval 실험 |
+| `scripts/make_champion_alpha_ultrafine_20260525.py` | t52 alpha-down plateau 초미세 확인 |
+| `scripts/make_plateau_disagreement_candidates_20260525.py` | public-stable plateau 후보 간 disagreement 저위험 실험 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -343,6 +357,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [2026-05-21 post-process 새 축 손절과 co-champion 안정성 확인](docs/experiment_summary_2026-05-21.md)
 - [2026-05-23 temporal curriculum과 공격적 물리 새 축 실패 정리](docs/experiment_summary_2026-05-23.md)
 - [2026-05-24 champion alpha calibration 정리](docs/experiment_summary_2026-05-24.md)
+- [2026-05-25 plateau 포화와 hit-mode retrieval 손절 정리](docs/experiment_summary_2026-05-25.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
@@ -378,6 +393,9 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [consensus hit mode 리포트](reports/latest_consensus_hit_mode_20260524.md)
 - [champion micro tuning 리포트](reports/latest_champion_micro_tuning_20260524.md)
 - [champion alpha refine 리포트](reports/latest_champion_alpha_refine_20260524.md)
+- [local hit-mode retrieval 리포트](reports/latest_local_hit_mode_retrieval_20260525.md)
+- [champion alpha ultrafine 리포트](reports/latest_champion_alpha_ultrafine_20260525.md)
+- [plateau disagreement 리포트](reports/latest_plateau_disagreement_20260525.md)
 
 ## 비고
 

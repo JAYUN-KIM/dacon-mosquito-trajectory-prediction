@@ -77,3 +77,8 @@ date,submission,public_score,notes
 2026-05-24,champmicro_rank1_gatet520a1075.csv,0.69100,raising t52 gate alpha to 0.1075 overcorrected
 2026-05-24,champmicro_rank3_gatet520a1025.csv,0.69140,lowering t52 gate alpha to 0.1025 produced a new public best
 2026-05-24,champalpha_rank1_t52a1015.csv,0.69140,tight alpha-down follow-up around the new best tied 0.69140
+2026-05-25,hitmode_rank1_localshape_k32_s0008_clustermean_r30_b18_c00008.csv,0.68980,local hit-mode retrieval looked positive in CV but failed on public
+2026-05-25,champalpha2_rank1_t52a1010.csv,0.69140,ultra-fine t52 alpha 0.1010 tied the public best
+2026-05-25,champalpha2_rank5_t52a1005.csv,0.69140,lower t52 alpha 0.1005 also tied confirming a broad alpha-down plateau
+2026-05-25,plateaudis_rank2_stablemeanplateau.csv,0.69140,mean of public-stable plateau candidates tied but did not break through
+2026-05-25,plateaudis_rank4_towarda1005top15b50.csv,0.69140,small plateau-disagreement move also tied the public best
