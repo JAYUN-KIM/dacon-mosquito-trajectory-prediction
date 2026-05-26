@@ -16,11 +16,11 @@
 ## 현재 성과
 
 <!-- AUTO:PROJECT_STATUS:START -->
-- 최고 Public LB: **0.69140**
-- 최신 최고점 확인일: **2026-05-25**
-- 핵심 개선 축: temporal-backcast pseudo-supervision + constant-turn curvature correction + sample-wise curvature gate
-- 최신 새 축 검토: 2026-05-25 local hit-mode retrieval은 `0.68980`으로 실패
-- 최신 판단: `t52` alpha-down 및 plateau disagreement 후보가 모두 `0.69140`에 묶여 alpha/plateau 미세조정은 포화
+- 최고 Public LB: **0.69180**
+- 최신 최고점 확인일: **2026-05-26**
+- 핵심 개선 축: recursive one-step dynamics + narrow gain-gated sample routing
+- 최신 새 축 검토: 2026-05-26 recursive one-step global blend는 실패했지만, top 8% gain gate 후보가 `0.69180`으로 돌파
+- 최신 판단: `recursive one-step`은 단독/전체 blend가 아니라 selector가 고른 소수 샘플에만 강하게 적용할 때 유효
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -126,6 +126,12 @@
    - public-stable plateau 후보들의 disagreement만 이용한 초저위험 평균/부분 이동 후보도 `0.69140`에 묶였습니다.
    - 결론적으로 5/25 기준 미세조정으로는 상한을 못 뚫고 있으며, 다음 연구는 다시 큰 새 축을 찾아야 합니다.
 
+20. 2026-05-26 recursive one-step gate 돌파
+   - `+80ms`를 직접 예측하는 대신, train 내부의 `+40ms` one-step transition을 학습하고 test에서 두 번 재귀 적용하는 새 축을 만들었습니다.
+   - recursive one-step 단독과 global blend는 public에서 약했지만, gain selector가 고른 top 8% 샘플에만 40% 이동한 후보가 `0.69180`으로 새 최고점을 만들었습니다.
+   - 성공 후보는 `recstep_rank4_gate_osc89b005late_f100s100u100_top080_b40.csv`입니다.
+   - 결론적으로 다음 연구는 recursive 모델 자체보다 `어떤 샘플만 움직일지`를 고르는 selector/gate 품질을 높이는 쪽입니다.
+
 ## 주요 인사이트
 
 - 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
@@ -154,6 +160,8 @@
 - 2026-05-23 기준 temporal curriculum 확장, smoothing, snap 물리축도 모두 실패해 단순한 새 물리식/새 pseudo-label 추가는 막혔다고 봅니다.
 - smoothing 계열은 특히 위험했습니다. 최근 관측의 노이즈 제거보다 순간 turn/acceleration 보존이 더 중요한 문제로 보입니다.
 - 2026-05-25 기준 `t52` alpha-down과 plateau disagreement까지 모두 `0.69140`에 포화됐으므로, 미세조정은 멈추고 다시 큰 새 축을 찾아야 합니다.
+- 2026-05-26 기준 recursive one-step dynamics는 전체 적용하면 약하지만, top 8% gain-gated routing으로 제한하면 `0.69180`까지 개선됐습니다.
+- 새 돌파는 모델 예측값 자체보다 `움직여도 되는 소수 샘플을 고르는 gate`에서 나왔으므로, 다음은 gate feature/선택 비율/강도 refine이 우선입니다.
 
 ## Public Score 흐름
 
@@ -235,6 +243,7 @@
 | `champalpha2_rank5_t52a1005.csv` | **0.69140** | 더 낮은 alpha도 최고점 동률로 plateau 확인 |
 | `plateaudis_rank2_stablemeanplateau.csv` | **0.69140** | plateau 후보 평균도 상한 돌파 실패 |
 | `plateaudis_rank4_towarda1005top15b50.csv` | **0.69140** | plateau disagreement 부분 이동도 동률 |
+| `recstep_rank4_gate_osc89b005late_f100s100u100_top080_b40.csv` | **0.69180** | recursive one-step 후보를 top 8% gain gate에만 적용해 새 최고점 |
 
 ## 대표 실험 코드
 
@@ -286,6 +295,8 @@
 | `scripts/run_local_hit_mode_retrieval_20260525.py` | 평균 KNN 대신 local target mode를 찾는 retrieval 실험 |
 | `scripts/make_champion_alpha_ultrafine_20260525.py` | t52 alpha-down plateau 초미세 확인 |
 | `scripts/make_plateau_disagreement_candidates_20260525.py` | public-stable plateau 후보 간 disagreement 저위험 실험 |
+| `scripts/run_recursive_onestep_dynamics_20260526.py` | +40ms one-step dynamics를 두 번 재귀 적용하고 gain gate 후보 생성 |
+| `scripts/make_recursive_onestep_gate_refine_20260526.py` | 0.69180 winner 주변 top fraction/blend strength 리파인 후보 생성 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -358,6 +369,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [2026-05-23 temporal curriculum과 공격적 물리 새 축 실패 정리](docs/experiment_summary_2026-05-23.md)
 - [2026-05-24 champion alpha calibration 정리](docs/experiment_summary_2026-05-24.md)
 - [2026-05-25 plateau 포화와 hit-mode retrieval 손절 정리](docs/experiment_summary_2026-05-25.md)
+- [2026-05-26 recursive one-step gate 돌파 정리](docs/experiment_summary_2026-05-26.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
@@ -396,6 +408,8 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [local hit-mode retrieval 리포트](reports/latest_local_hit_mode_retrieval_20260525.md)
 - [champion alpha ultrafine 리포트](reports/latest_champion_alpha_ultrafine_20260525.md)
 - [plateau disagreement 리포트](reports/latest_plateau_disagreement_20260525.md)
+- [recursive one-step dynamics 리포트](reports/latest_recursive_onestep_dynamics_20260526.md)
+- [recursive one-step gate refine 리포트](reports/latest_recursive_onestep_gate_refine_20260526.md)
 
 ## 비고
 

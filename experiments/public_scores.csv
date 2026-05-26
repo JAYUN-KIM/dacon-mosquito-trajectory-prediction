@@ -82,3 +82,4 @@ date,submission,public_score,notes
 2026-05-25,champalpha2_rank5_t52a1005.csv,0.69140,lower t52 alpha 0.1005 also tied confirming a broad alpha-down plateau
 2026-05-25,plateaudis_rank2_stablemeanplateau.csv,0.69140,mean of public-stable plateau candidates tied but did not break through
 2026-05-25,plateaudis_rank4_towarda1005top15b50.csv,0.69140,small plateau-disagreement move also tied the public best
+2026-05-26,recstep_rank4_gate_osc89b005late_f100s100u100_top080_b40.csv,0.69180,recursive one-step dynamics only worked when restricted to top 8 percent gain-gated samples
