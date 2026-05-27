@@ -16,11 +16,11 @@
 ## 현재 성과
 
 <!-- AUTO:PROJECT_STATUS:START -->
-- 최고 Public LB: **0.69180**
-- 최신 최고점 확인일: **2026-05-26**
+- 최고 Public LB: **0.69200**
+- 최신 최고점 확인일: **2026-05-27**
 - 핵심 개선 축: recursive one-step dynamics + narrow gain-gated sample routing
-- 최신 새 축 검토: 2026-05-26 recursive one-step global blend는 실패했지만, top 8% gain gate 후보가 `0.69180`으로 돌파
-- 최신 판단: `recursive one-step`은 단독/전체 blend가 아니라 selector가 고른 소수 샘플에만 강하게 적용할 때 유효
+- 최신 새 축 검토: top 9%/45% recursive gate가 `0.69200`으로 상승했지만, 47.5%와 residual calibrator는 동률로 포화
+- 최신 판단: recursive gate 비율/강도 미세조정은 `0.69200` 근처에서 막혔고, 다음은 완전히 새로운 축을 찾아야 함
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -132,6 +132,13 @@
    - 성공 후보는 `recstep_rank4_gate_osc89b005late_f100s100u100_top080_b40.csv`입니다.
    - 결론적으로 다음 연구는 recursive 모델 자체보다 `어떤 샘플만 움직일지`를 고르는 selector/gate 품질을 높이는 쪽입니다.
 
+21. 2026-05-27 recursive gate plateau 확인
+   - 전날 성공축을 이어 받아 top fraction과 blend strength를 미세조정했습니다.
+   - `recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv`가 `0.69200`으로 새 최고점을 만들었습니다.
+   - 같은 top 9%에서 strength를 `0.475`로 올린 후보와 winner residual calibrator rank1은 모두 `0.69200` 동률에 머물렀습니다.
+   - `top090_b400`은 `0.69160`으로 하락해, top 9%에서는 약한 이동보다 45% 이상이 맞지만 47.5% 이상은 추가 상승이 없었습니다.
+   - 결론적으로 5/27 기준 recursive gate 미세조정은 `0.69200`에서 포화로 보고, 다음은 새 축을 다시 찾아야 합니다.
+
 ## 주요 인사이트
 
 - 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
@@ -162,6 +169,8 @@
 - 2026-05-25 기준 `t52` alpha-down과 plateau disagreement까지 모두 `0.69140`에 포화됐으므로, 미세조정은 멈추고 다시 큰 새 축을 찾아야 합니다.
 - 2026-05-26 기준 recursive one-step dynamics는 전체 적용하면 약하지만, top 8% gain-gated routing으로 제한하면 `0.69180`까지 개선됐습니다.
 - 새 돌파는 모델 예측값 자체보다 `움직여도 되는 소수 샘플을 고르는 gate`에서 나왔으므로, 다음은 gate feature/선택 비율/강도 refine이 우선입니다.
+- 2026-05-27 기준 top 9%/45% recursive gate가 `0.69200`을 만들었지만, 47.5% 강도와 residual calibrator가 모두 동률이라 이 축은 단기 포화로 판단합니다.
+- 다음 실험은 recursive gate 주변 미세조정보다 새로운 target formulation, 다른 pseudo-supervision, 또는 다른 hit rescue selector 구조를 우선합니다.
 
 ## Public Score 흐름
 
@@ -244,6 +253,10 @@
 | `plateaudis_rank2_stablemeanplateau.csv` | **0.69140** | plateau 후보 평균도 상한 돌파 실패 |
 | `plateaudis_rank4_towarda1005top15b50.csv` | **0.69140** | plateau disagreement 부분 이동도 동률 |
 | `recstep_rank4_gate_osc89b005late_f100s100u100_top080_b40.csv` | **0.69180** | recursive one-step 후보를 top 8% gain gate에만 적용해 새 최고점 |
+| `recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv` | **0.69200** | top 9% recursive gain gate와 45% 이동으로 새 최고점 |
+| `recstepgate27_rank2_top090_b400_f100s100u100_top090_b400.csv` | 0.69160 | top 9%에서 40% 이동은 약해 하락 |
+| `recstepgate27b_rank1_top090_b475_f100s100u100_top090_b475.csv` | **0.69200** | 47.5% 이동도 최고점 동률로 강도 plateau 확인 |
+| `wincal27_rank1_top03s010c0008.csv` | **0.69200** | winner residual calibrator 저위험 보정도 최고점 동률 |
 
 ## 대표 실험 코드
 
@@ -297,6 +310,9 @@
 | `scripts/make_plateau_disagreement_candidates_20260525.py` | public-stable plateau 후보 간 disagreement 저위험 실험 |
 | `scripts/run_recursive_onestep_dynamics_20260526.py` | +40ms one-step dynamics를 두 번 재귀 적용하고 gain gate 후보 생성 |
 | `scripts/make_recursive_onestep_gate_refine_20260526.py` | 0.69180 winner 주변 top fraction/blend strength 리파인 후보 생성 |
+| `scripts/make_recursive_onestep_gate_jitter_20260527.py` | 0.69180 winner 주변 top 9%/강도 jitter 후보 생성 |
+| `scripts/make_recursive_onestep_gate_peak_20260527.py` | 0.69200 winner 주변 peak strength/fraction 후보 생성 |
+| `scripts/run_winner_residual_calibrator_20260527.py` | 0.692 winner의 miss-risk 샘플에만 mm 단위 residual 보정 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -370,6 +386,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [2026-05-24 champion alpha calibration 정리](docs/experiment_summary_2026-05-24.md)
 - [2026-05-25 plateau 포화와 hit-mode retrieval 손절 정리](docs/experiment_summary_2026-05-25.md)
 - [2026-05-26 recursive one-step gate 돌파 정리](docs/experiment_summary_2026-05-26.md)
+- [2026-05-27 recursive gate plateau와 새 축 전환 정리](docs/experiment_summary_2026-05-27.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
@@ -410,6 +427,9 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [plateau disagreement 리포트](reports/latest_plateau_disagreement_20260525.md)
 - [recursive one-step dynamics 리포트](reports/latest_recursive_onestep_dynamics_20260526.md)
 - [recursive one-step gate refine 리포트](reports/latest_recursive_onestep_gate_refine_20260526.md)
+- [recursive one-step gate jitter 리포트](reports/latest_recursive_onestep_gate_jitter_20260527.md)
+- [recursive one-step gate peak 리포트](reports/latest_recursive_onestep_gate_peak_20260527.md)
+- [winner residual calibrator 리포트](reports/latest_winner_residual_calibrator_20260527.md)
 
 ## 비고
 

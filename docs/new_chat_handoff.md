@@ -78,10 +78,11 @@ id, x, y, z
 
 ## 현재 최고 성과
 
-- 최고 Public LB: `0.69180`
-- 최신 최고점 확인일: `2026-05-26`
-- Champion: `recstep_rank4_gate_osc89b005late_f100s100u100_top080_b40.csv`
-- 이전 champion: `champmicro_rank3_gatet520a1025.csv = 0.69140`
+- 최고 Public LB: `0.69200`
+- 최신 최고점 확인일: `2026-05-27`
+- Champion: `recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv`
+- 이전 champion: `recstep_rank4_gate_osc89b005late_f100s100u100_top080_b40.csv = 0.69180`
+- alpha champion: `champmicro_rank3_gatet520a1025.csv = 0.69140`
 - Follow-up 동률: `champalpha_rank1_t52a1015.csv = 0.69140`
 - 이전 안정 champion: `curvgate_refine_rank2_gatet52a105.csv = 0.69120`
 - Backup champion: `curvgate_rank4_gatet54a105.csv`
@@ -90,8 +91,8 @@ id, x, y, z
   - `cochamp_blend_t52_t54_w65.csv = 0.69120`
   - `cochamp_blend_t52_t54_w35.csv = 0.69120`
 - 핵심 축: recursive one-step dynamics + narrow gain-gated sample routing
-- 최신 판단일: `2026-05-26`
-- 최신 판단: recursive one-step global blend는 약했지만, gain selector가 고른 top 8% 샘플에만 40% 이동한 후보가 `0.69180`으로 돌파했다. 다음은 모델 자체보다 gate selector 품질과 선택 비율/강도를 다듬는 것이 우선이다.
+- 최신 판단일: `2026-05-27`
+- 최신 판단: top 9%/45% recursive gate가 `0.69200`으로 올랐지만, 47.5% 강도와 residual calibrator는 모두 동률이었다. recursive gate 미세조정은 단기 포화로 보고, 내일은 완전히 새로운 축을 우선한다.
 
 ## 주요 점수 흐름
 
@@ -110,6 +111,7 @@ id, x, y, z
 | curvature gate | 0.69120 | correction 적용 샘플을 gate로 선택 |
 | champion alpha calibration | 0.69140 | t52 gate 유지, alpha를 0.1025 근처로 낮춤 |
 | recursive one-step gain gate | 0.69180 | +40ms dynamics를 두 번 적용하되 top 8% 샘플만 이동 |
+| recursive gate top9 refine | 0.69200 | top 9% 샘플에 45% 이동 |
 
 ## 최근 실험 기록
 
@@ -174,6 +176,14 @@ id, x, y, z
 - 후속 후보: `recstepgate_refine_rank1_top08_b45_f100s100u100_top080_b45.csv`, `rank2_top06_b40`, `rank3_top10_b40` 순서로 제출 후보를 만들었다.
 - 결론: 다음 연구는 recursive 모델 확장보다 gate feature, 선택 비율, 이동 강도, selector calibration 쪽을 먼저 파야 한다.
 
+### 2026-05-27
+
+- `recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv = 0.69200`
+- `recstepgate27_rank2_top090_b400_f100s100u100_top090_b400.csv = 0.69160`
+- `recstepgate27b_rank1_top090_b475_f100s100u100_top090_b475.csv = 0.69200`
+- `wincal27_rank1_top03s010c0008.csv = 0.69200`
+- 결론: top 9% 선택은 맞고 40%보다 45%가 좋았지만, 47.5% 강도와 residual calibrator는 추가 상승 없이 동률이었다. 이 축은 `0.69200`에서 포화로 보고 내일은 새 축을 파야 한다.
+
 ## 핵심 인사이트
 
 - 평균 거리보다 `1cm hit 경계` 샘플을 직접 겨냥해야 점수가 오른다.
@@ -187,19 +197,20 @@ id, x, y, z
 - 2026-05-24에는 miss regime selector도 public에서 하락했으나, `t52` gate alpha-down은 `0.69140`을 만들었다.
 - 2026-05-25에는 alpha-down과 plateau disagreement가 모두 `0.69140`에 묶여 미세조정 포화가 확인됐다.
 - 2026-05-26에는 recursive one-step dynamics가 global blend로는 약했지만, top 8% gain-gated routing으로 `0.69180`까지 상승했다.
-- 다음은 recursive gate selector의 feature/선택 비율/이동 강도를 우선 개선하고, global blend나 전체 적용은 피한다.
+- 2026-05-27에는 top 9%/45% recursive gate가 `0.69200`으로 올랐지만, 47.5% 강도와 residual calibrator가 모두 동률이라 미세조정 포화가 확인됐다.
+- 다음은 recursive gate selector 주변이 아니라 새로운 target formulation, pseudo-supervision, 또는 다른 hit rescue selector 구조를 우선한다.
 
 ## 내일 연구 방향
 
-목표는 새 최고점 `0.69180`을 anchor로 유지하되, recursive one-step gate의 selector 품질을 높여 0.7 근처로 밀어보는 것이다.
+목표는 새 최고점 `0.69200`을 anchor로 유지하되, recursive gate 미세조정은 멈추고 0.7 근처를 노릴 수 있는 새 축을 찾는 것이다.
 
 우선순위:
 
-1. `recstepgate_refine_rank1_top08_b45...`부터 제출해 winner 주변 강도/비율 방향성을 확인한다.
-2. rank1이 오르면 blend strength를 `0.45~0.55`로 확장하고, rank2가 오르면 top fraction을 `5~7%`로 좁힌다.
-3. rank3이 오르면 top fraction을 `10~12%`로 넓히되, global blend는 다시 시도하지 않는다.
-4. `t52` alpha/gate 미세조정, hit-mode retrieval, KNN residual, smoothing, snap, 단순 miss hard-swap은 보류한다.
-5. 제출 후보를 만들 때는 `0.69180` anchor 대비 기존 hit 파괴 위험과 이동량을 먼저 기록한다.
+1. `recstepgate27_rank1_top090_b450...`을 새 anchor로 둔다.
+2. top fraction/strength 미세조정과 winner residual calibrator는 우선 중단한다.
+3. 새 후보는 recursive gate와 독립적인 supervision/target formulation이어야 한다.
+4. 그래도 후보를 만들 때는 `0.69200` anchor 대비 기존 hit 파괴 위험과 이동량을 먼저 기록한다.
+5. public에서 새 축이 `0.6920`을 못 넘으면 빠르게 손절하고 다음 축으로 넘어간다.
 
 ## 대표 파일
 
@@ -207,7 +218,7 @@ id, x, y, z
 |---|---|
 | `README.md` | 전체 프로젝트 현황과 score 흐름 |
 | `experiments/public_scores.csv` | public 제출 점수 기록 |
-| `docs/experiment_summary_2026-05-26.md` | 최신 일별 정리 |
+| `docs/experiment_summary_2026-05-27.md` | 최신 일별 정리 |
 | `reports/latest_local_target_manifold_projection_20260521.md` | manifold projection 실패 리포트 |
 | `reports/latest_hit_rescue_specialist_20260521.md` | hit-rescue specialist 실패 리포트 |
 | `reports/latest_temporal_curriculum_fast_20260522.md` | temporal curriculum 실패 리포트 |
@@ -226,6 +237,9 @@ id, x, y, z
 | `scripts/make_plateau_disagreement_candidates_20260525.py` | plateau 후보 disagreement 저위험 실험 |
 | `scripts/run_recursive_onestep_dynamics_20260526.py` | +40ms one-step dynamics recursive gate 실험 |
 | `scripts/make_recursive_onestep_gate_refine_20260526.py` | 0.69180 winner 주변 gate refine 후보 생성 |
+| `scripts/make_recursive_onestep_gate_jitter_20260527.py` | top 9%/45% recursive gate 후보 생성 |
+| `scripts/make_recursive_onestep_gate_peak_20260527.py` | 0.69200 winner 주변 strength/fraction peak 탐색 |
+| `scripts/run_winner_residual_calibrator_20260527.py` | 0.692 winner miss-risk residual calibrator 실험 |
 | `scripts/validate_submission.py` | 제출 파일 검증 |
 
 ## 재현/검증 예시

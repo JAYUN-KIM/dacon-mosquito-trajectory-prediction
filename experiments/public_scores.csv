@@ -83,3 +83,7 @@ date,submission,public_score,notes
 2026-05-25,plateaudis_rank2_stablemeanplateau.csv,0.69140,mean of public-stable plateau candidates tied but did not break through
 2026-05-25,plateaudis_rank4_towarda1005top15b50.csv,0.69140,small plateau-disagreement move also tied the public best
 2026-05-26,recstep_rank4_gate_osc89b005late_f100s100u100_top080_b40.csv,0.69180,recursive one-step dynamics only worked when restricted to top 8 percent gain-gated samples
+2026-05-27,recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv,0.69200,top 9 percent recursive gain gate with 45 percent move became the new public best
+2026-05-27,recstepgate27_rank2_top090_b400_f100s100u100_top090_b400.csv,0.69160,top 9 percent with 40 percent move was too weak and dropped
+2026-05-27,recstepgate27b_rank1_top090_b475_f100s100u100_top090_b475.csv,0.69200,stronger 47.5 percent move tied the new best and confirmed a plateau
+2026-05-27,wincal27_rank1_top03s010c0008.csv,0.69200,winner residual calibrator was safe but only tied the new best
