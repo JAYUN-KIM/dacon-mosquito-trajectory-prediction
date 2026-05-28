@@ -259,3 +259,27 @@ Get-Content reports/latest_hit_rescue_specialist_20260521.md -Encoding UTF8
 - `data/`, `submissions/`, `outputs/`는 GitHub에 올리지 않는다.
 - 자동화는 사용자가 해제했으므로 현재는 수동 연구/업로드 흐름이다.
 - 사용자는 공격적인 새 축을 선호하지만, public에서 반복 하락하면 바로 손절하는 판단을 선호한다.
+
+## 2026-05-28 update
+
+- Current best Public LB remains `0.69200`.
+- Best file remains `recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv`.
+- 2026-05-28 experiments did not improve the best score.
+- Submitted/confirmed:
+  - `selfcons28_rank1_top05b016c0018t090.csv = 0.69180`
+  - `selfcons28_rank2_top025b030c0025t085.csv = 0.69200`
+  - `wideact28_rank1_softblend08.csv = 0.69180`
+  - `wideact28_refine_softblend06.csv = 0.69140`
+  - final wide-action follow-up reported as `0.69020`; exact filename needs confirmation.
+- New axes tried:
+  - local-axis scale calibrator
+  - self-consistency physics router
+  - residual density mode
+  - wide analytic physics action selector
+- Main conclusion:
+  - Winner-neighborhood post-processing is still stuck around `0.6914~0.6920`.
+  - Wide action selector had strong OOF signal (`+0.0016`) but failed on public, so OOF-public gap remains a key risk.
+  - Tomorrow, ask another AI for a fresh problem reformulation before doing more micro-tuning.
+- Useful documents:
+  - `docs/experiment_summary_2026-05-28.md`
+  - `docs/external_ai_advice_request_2026-05-29.md`

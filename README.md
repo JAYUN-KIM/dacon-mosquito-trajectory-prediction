@@ -435,3 +435,13 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 
 원본 데이터와 제출 파일은 용량 및 대회 규정 관리를 위해 GitHub에 포함하지 않습니다.  
 이 저장소는 실험 코드, 핵심 결과, 재현 가능한 연구 기록을 중심으로 정리합니다.
+
+## 최근 업데이트: 2026-05-28
+
+- 최고 Public LB는 **0.69200**으로 유지됩니다.
+- 5/28에는 recursive gate 미세조정보다 완전히 다른 축을 우선 탐색했습니다.
+- self-consistency physics router는 최고 `0.69200` 동률에 그쳤습니다.
+- wide physics action selector는 OOF proxy에서 강했지만 public은 `0.69180`으로 하락했습니다.
+- 결론적으로 winner 주변 post-process는 계속 plateau이며, 다음 실험은 외부 AI 조언을 받아 문제 재정의와 새 target/feature formulation부터 다시 검토합니다.
+- 상세 정리: [`docs/experiment_summary_2026-05-28.md`](docs/experiment_summary_2026-05-28.md)
+- 외부 AI 조언 요청 메모: [`docs/external_ai_advice_request_2026-05-29.md`](docs/external_ai_advice_request_2026-05-29.md)

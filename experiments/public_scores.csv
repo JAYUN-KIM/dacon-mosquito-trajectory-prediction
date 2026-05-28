@@ -87,3 +87,8 @@ date,submission,public_score,notes
 2026-05-27,recstepgate27_rank2_top090_b400_f100s100u100_top090_b400.csv,0.69160,top 9 percent with 40 percent move was too weak and dropped
 2026-05-27,recstepgate27b_rank1_top090_b475_f100s100u100_top090_b475.csv,0.69200,stronger 47.5 percent move tied the new best and confirmed a plateau
 2026-05-27,wincal27_rank1_top03s010c0008.csv,0.69200,winner residual calibrator was safe but only tied the new best
+2026-05-28,selfcons28_rank1_top05b016c0018t090.csv,0.69180,self-consistency physics router was safe but did not beat the 0.692 plateau
+2026-05-28,selfcons28_rank2_top025b030c0025t085.csv,0.69200,more aggressive self-consistency router tied the best but did not break through
+2026-05-28,wideact28_rank1_softblend08.csv,0.69180,wide analytic physics action selector had strong OOF signal but dropped slightly on public
+2026-05-28,wideact28_refine_softblend06.csv,0.69140,safer same-direction wide action refine underperformed
+2026-05-28,wide_action_final_probe_unconfirmed,0.69020,reported final wide-action follow-up underperformed; exact submitted filename should be confirmed
