@@ -283,3 +283,22 @@ Get-Content reports/latest_hit_rescue_specialist_20260521.md -Encoding UTF8
 - Useful documents:
   - `docs/experiment_summary_2026-05-28.md`
   - `docs/external_ai_advice_request_2026-05-29.md`
+
+## 2026-05-30 update
+
+- Current best Public LB remains `0.69200`.
+- 2026-05-29/30 additional public results:
+  - `metricbias29_rank1_localfull.csv = 0.69120`
+  - `metricbias29_rank2_localshrink075.csv = 0.69120`
+  - `metricbias29_rank3_localshrink050.csv = 0.69140`
+  - `regimemoe30_diag_blend03_k5a05.csv = 0.69100`
+  - `analog_transport_20260530_winner_move_mean_k64_p2_top050_a25.csv = 0.69140`
+- Main conclusion:
+  - Metric-center bias looked stable in OOF but failed on public.
+  - External-AI Regime-MoE was much weaker than CV in OOF; tiny winner blend also failed.
+  - Orientation-equivariant analog transport pure OOF was very weak; low-risk winner-selective probe also failed.
+  - The project is likely overusing old winner/candidate memory and repeatedly producing 0.691~0.692 neighbor variants.
+- Next-day instruction:
+  - Run a clean-room study from raw trajectory/label files only.
+  - Do not use old submissions, OOF caches, champion anchors, previous alpha/top-fraction heuristics, or generated candidate blends.
+  - See `docs/clean_room_plan_2026-05-31.md`.

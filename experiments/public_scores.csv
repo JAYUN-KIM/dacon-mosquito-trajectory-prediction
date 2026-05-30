@@ -92,3 +92,8 @@ date,submission,public_score,notes
 2026-05-28,wideact28_rank1_softblend08.csv,0.69180,wide analytic physics action selector had strong OOF signal but dropped slightly on public
 2026-05-28,wideact28_refine_softblend06.csv,0.69140,safer same-direction wide action refine underperformed
 2026-05-28,wide_action_final_probe_unconfirmed,0.69020,reported final wide-action follow-up underperformed; exact submitted filename should be confirmed
+2026-05-29,metricbias29_rank1_localfull.csv,0.69120,stable local up metric-center bias dropped on public despite strong OOF stability
+2026-05-29,metricbias29_rank2_localshrink075.csv,0.69120,shrunk local up metric-center bias also dropped
+2026-05-29,metricbias29_rank3_localshrink050.csv,0.69140,half-strength local up metric-center bias still missed the 0.692 plateau
+2026-05-30,regimemoe30_diag_blend03_k5a05.csv,0.69100,external-AI Regime-MoE diagnostic blend was weak and should be abandoned
+2026-05-30,analog_transport_20260530_winner_move_mean_k64_p2_top050_a25.csv,0.69140,orientation-equivariant analog transport low-risk probe underperformed

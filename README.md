@@ -445,3 +445,12 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - 결론적으로 winner 주변 post-process는 계속 plateau이며, 다음 실험은 외부 AI 조언을 받아 문제 재정의와 새 target/feature formulation부터 다시 검토합니다.
 - 상세 정리: [`docs/experiment_summary_2026-05-28.md`](docs/experiment_summary_2026-05-28.md)
 - 외부 AI 조언 요청 메모: [`docs/external_ai_advice_request_2026-05-29.md`](docs/external_ai_advice_request_2026-05-29.md)
+
+## 최근 업데이트: 2026-05-30
+
+- 최고 Public LB는 **0.69200**으로 유지됩니다.
+- metric-center bias, 외부 AI Regime-MoE, analog transport 모두 public에서 하락했습니다.
+- 최근 실험이 기존 winner 주변 보정으로 수렴하는 경향이 강해, 다음 연구는 clean-room 방식으로 진행합니다.
+- 다음 실험은 raw trajectory/label만 사용하고 기존 submission/cache/champion anchor를 쓰지 않는 독립 pipeline부터 다시 설계합니다.
+- 상세 정리: [`docs/experiment_summary_2026-05-30.md`](docs/experiment_summary_2026-05-30.md)
+- Clean-room 계획: [`docs/clean_room_plan_2026-05-31.md`](docs/clean_room_plan_2026-05-31.md)
