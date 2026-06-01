@@ -3,6 +3,8 @@
 ## 최종 성과
 
 - 최종 Public LB: **0.69200**
+- 최종 순위: **93등 / 785명**
+- 최종 백분위: **상위 11.9%**
 - 최종 선택 제출: `recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv`
 - 핵심 축: recursive one-step dynamics + top 9% gain-gated routing + 45% move
 - 최종 확인일: 2026-06-01

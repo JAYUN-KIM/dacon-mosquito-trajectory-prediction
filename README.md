@@ -17,6 +17,7 @@
 
 <!-- AUTO:PROJECT_STATUS:START -->
 - 최고 Public LB: **0.69200**
+- 최종 순위: **93등 / 785명, 상위 11.9%**
 - 최종 최고점 확인일: **2026-06-01**
 - 최종 선택 제출: `recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv`
 - 핵심 개선 축: recursive one-step dynamics + narrow gain-gated sample routing
@@ -148,6 +149,7 @@
 
 23. 2026-06-01 최종 마감
    - 최종 Public LB는 `0.69200`입니다.
+   - 최종 순위는 785명 중 93등으로, 상위 `11.9%`입니다.
    - 최종 선택 파일은 `recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv`입니다.
    - 프로젝트는 recursive one-step dynamics를 top 9% gain-gated 샘플에만 45% 적용한 축을 최고 성과로 정리합니다.
 
@@ -477,6 +479,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 ## 최종 업데이트: 2026-06-01
 
 - 최종 Public LB는 **0.69200**입니다.
+- 최종 순위는 **93등 / 785명**, 상위 **11.9%**입니다.
 - 최종 선택 제출은 `recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv`입니다.
 - 5/31 clean-room raw action selector는 OOF 개선 신호에도 public `0.65140`으로 크게 하락해 최종 후보에서 제외했습니다.
 - 최종 결론은 recursive one-step dynamics를 narrow gain gate로 제한 적용한 축이 가장 안정적이었다는 것입니다.
