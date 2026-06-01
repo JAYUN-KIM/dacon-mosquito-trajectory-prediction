@@ -17,10 +17,11 @@
 
 <!-- AUTO:PROJECT_STATUS:START -->
 - 최고 Public LB: **0.69200**
-- 최신 최고점 확인일: **2026-05-27**
+- 최종 최고점 확인일: **2026-06-01**
+- 최종 선택 제출: `recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv`
 - 핵심 개선 축: recursive one-step dynamics + narrow gain-gated sample routing
-- 최신 새 축 검토: top 9%/45% recursive gate가 `0.69200`으로 상승했지만, 47.5%와 residual calibrator는 동률로 포화
-- 최신 판단: recursive gate 비율/강도 미세조정은 `0.69200` 근처에서 막혔고, 다음은 완전히 새로운 축을 찾아야 함
+- 최신 새 축 검토: clean-room raw action selector는 OOF 신호에도 불구하고 public `0.65140`으로 크게 하락
+- 최종 판단: `0.69200` recursive gate plateau를 최종 성과로 확정
 - 상세 실험 기록은 `docs/`, `reports/`, `experiments/` 디렉토리에 분리 보관
 <!-- AUTO:PROJECT_STATUS:END -->
 
@@ -139,6 +140,17 @@
    - `top090_b400`은 `0.69160`으로 하락해, top 9%에서는 약한 이동보다 45% 이상이 맞지만 47.5% 이상은 추가 상승이 없었습니다.
    - 결론적으로 5/27 기준 recursive gate 미세조정은 `0.69200`에서 포화로 보고, 다음은 새 축을 다시 찾아야 합니다.
 
+22. 2026-05-31 clean-room raw action selector 실패 확인
+   - 기존 submission, champion anchor, cache를 모두 배제하고 raw trajectory/label만 사용해 물리 action selector를 새로 만들었습니다.
+   - train OOF에서는 단일 raw action `0.59930`, raw action oracle `0.77670`, soft selector `0.62490`으로 후보 선택 여지가 커 보였습니다.
+   - 하지만 public probe `cleanroom31_rank1_soft_p3_blend90.csv`는 `0.65140`으로 크게 하락했습니다.
+   - 결론적으로 기존 `0.69200` 계열은 단순 raw 물리식 이상의 누적 보정/selector 안정성이 있었고, 순수 clean-room action selector는 최종 후보에서 제외합니다.
+
+23. 2026-06-01 최종 마감
+   - 최종 Public LB는 `0.69200`입니다.
+   - 최종 선택 파일은 `recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv`입니다.
+   - 프로젝트는 recursive one-step dynamics를 top 9% gain-gated 샘플에만 45% 적용한 축을 최고 성과로 정리합니다.
+
 ## 주요 인사이트
 
 - 단순 좌표계 residual보다 마지막 속도 방향 기준 local-frame residual이 훨씬 안정적이었습니다.
@@ -171,6 +183,8 @@
 - 새 돌파는 모델 예측값 자체보다 `움직여도 되는 소수 샘플을 고르는 gate`에서 나왔으므로, 다음은 gate feature/선택 비율/강도 refine이 우선입니다.
 - 2026-05-27 기준 top 9%/45% recursive gate가 `0.69200`을 만들었지만, 47.5% 강도와 residual calibrator가 모두 동률이라 이 축은 단기 포화로 판단합니다.
 - 다음 실험은 recursive gate 주변 미세조정보다 새로운 target formulation, 다른 pseudo-supervision, 또는 다른 hit rescue selector 구조를 우선합니다.
+- 2026-05-31 기준 clean-room raw action selector는 OOF에서 가능성이 있어 보였지만 public `0.65140`으로 크게 하락해, raw-only selector의 OOF-public 전이 실패가 확인됐습니다.
+- 최종적으로는 새 축을 무리하게 제출하기보다, public에서 반복 검증된 `0.69200` recursive gate 후보를 최종 성과로 확정했습니다.
 
 ## Public Score 흐름
 
@@ -257,6 +271,8 @@
 | `recstepgate27_rank2_top090_b400_f100s100u100_top090_b400.csv` | 0.69160 | top 9%에서 40% 이동은 약해 하락 |
 | `recstepgate27b_rank1_top090_b475_f100s100u100_top090_b475.csv` | **0.69200** | 47.5% 이동도 최고점 동률로 강도 plateau 확인 |
 | `wincal27_rank1_top03s010c0008.csv` | **0.69200** | winner residual calibrator 저위험 보정도 최고점 동률 |
+| `cleanroom31_rank1_soft_p3_blend90.csv` | 0.65140 | raw-only clean-room action selector는 OOF와 달리 public에서 크게 하락 |
+| `recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv` | **0.69200** | 최종 선택 제출 |
 
 ## 대표 실험 코드
 
@@ -313,6 +329,7 @@
 | `scripts/make_recursive_onestep_gate_jitter_20260527.py` | 0.69180 winner 주변 top 9%/강도 jitter 후보 생성 |
 | `scripts/make_recursive_onestep_gate_peak_20260527.py` | 0.69200 winner 주변 peak strength/fraction 후보 생성 |
 | `scripts/run_winner_residual_calibrator_20260527.py` | 0.692 winner의 miss-risk 샘플에만 mm 단위 residual 보정 |
+| `scripts/run_cleanroom_action_selector_20260531.py` | 기존 anchor/cache 없이 raw-only physics action selector를 진단한 최종 실패 축 |
 | `scripts/validate_submission.py` | 제출 파일 shape/null/finite/id 검증 |
 | `scripts/publish_to_github.py` | 코드/리포트 범위만 GitHub commit/push |
 
@@ -387,6 +404,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [2026-05-25 plateau 포화와 hit-mode retrieval 손절 정리](docs/experiment_summary_2026-05-25.md)
 - [2026-05-26 recursive one-step gate 돌파 정리](docs/experiment_summary_2026-05-26.md)
 - [2026-05-27 recursive gate plateau와 새 축 전환 정리](docs/experiment_summary_2026-05-27.md)
+- [2026-06-01 최종 정리](docs/final_summary_2026-06-01.md)
 - [public score 기록](experiments/public_scores.csv)
 - [hit-weighted breakthrough refine 리포트](reports/latest_hit_weighted_breakthrough_refine.md)
 - [retrieval blend/router 리포트](reports/latest_retrieval_blend_router.md)
@@ -430,6 +448,7 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - [recursive one-step gate jitter 리포트](reports/latest_recursive_onestep_gate_jitter_20260527.md)
 - [recursive one-step gate peak 리포트](reports/latest_recursive_onestep_gate_peak_20260527.md)
 - [winner residual calibrator 리포트](reports/latest_winner_residual_calibrator_20260527.md)
+- [clean-room action selector 리포트](reports/cleanroom_action_selector_20260531.md)
 
 ## 비고
 
@@ -454,3 +473,11 @@ python scripts/publish_to_github.py --message "Document 2026-05-08 direct-step b
 - 다음 실험은 raw trajectory/label만 사용하고 기존 submission/cache/champion anchor를 쓰지 않는 독립 pipeline부터 다시 설계합니다.
 - 상세 정리: [`docs/experiment_summary_2026-05-30.md`](docs/experiment_summary_2026-05-30.md)
 - Clean-room 계획: [`docs/clean_room_plan_2026-05-31.md`](docs/clean_room_plan_2026-05-31.md)
+
+## 최종 업데이트: 2026-06-01
+
+- 최종 Public LB는 **0.69200**입니다.
+- 최종 선택 제출은 `recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv`입니다.
+- 5/31 clean-room raw action selector는 OOF 개선 신호에도 public `0.65140`으로 크게 하락해 최종 후보에서 제외했습니다.
+- 최종 결론은 recursive one-step dynamics를 narrow gain gate로 제한 적용한 축이 가장 안정적이었다는 것입니다.
+- 상세 정리: [`docs/final_summary_2026-06-01.md`](docs/final_summary_2026-06-01.md)

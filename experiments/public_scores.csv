@@ -97,3 +97,5 @@ date,submission,public_score,notes
 2026-05-29,metricbias29_rank3_localshrink050.csv,0.69140,half-strength local up metric-center bias still missed the 0.692 plateau
 2026-05-30,regimemoe30_diag_blend03_k5a05.csv,0.69100,external-AI Regime-MoE diagnostic blend was weak and should be abandoned
 2026-05-30,analog_transport_20260530_winner_move_mean_k64_p2_top050_a25.csv,0.69140,orientation-equivariant analog transport low-risk probe underperformed
+2026-05-31,cleanroom31_rank1_soft_p3_blend90.csv,0.65140,raw-only clean-room action selector showed severe OOF-public transfer failure and was abandoned
+2026-06-01,recstepgate27_rank1_top090_b450_f100s100u100_top090_b450.csv,0.69200,final selected submission; recursive one-step top 9 percent gain gate with 45 percent move
